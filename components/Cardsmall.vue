@@ -5,7 +5,11 @@
   />
   <div class="d-flex">
     <div class="card">
-      <img :src="imageSrc" class="card-img-top card-image" alt="..." />
+      <div class="image-container">
+        <img :src="imageSrc" class="card-img-top card-image" alt="..." />
+        <bookmark class="bookmark-icon"></bookmark>
+        <!-- Bookmark tetap ada -->
+      </div>
       <div class="card-body">
         <h5 class="card-title">Path of Luminous Forest</h5>
         <p class="card-text">
@@ -75,5 +79,19 @@ export default {
   color: #466543;
   padding: 5px 10px; /* Memberikan padding pada kategori */
   border-radius: 5px; /* Membulatkan sudut kategori */
+}
+
+.image-container {
+  position: relative; /* Membuat elemen bookmark bisa diposisikan relatif terhadap gambar */
+}
+
+.bookmark-icon {
+  position: absolute;
+  bottom: 40px; /* Menempatkan bookmark di bagian bawah */
+  right: 30px; /* Menempatkan bookmark di bagian kanan */
+  background-color: #466543;
+  border-radius: 100%; /* Membuat bentuk bookmark melingkar */
+  padding: 10px; /* Padding untuk memperbesar ikon */
+  cursor: pointer; /* Menambahkan kursor pointer saat hover */
 }
 </style>

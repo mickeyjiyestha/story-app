@@ -69,10 +69,130 @@
         </div>
       </div>
     </div>
+
+    <div class="container-card mt-5">
+      <div class="d-flex">
+        <div class="first-card">
+          <Card
+            :imageSrc="latestImage"
+            :profilePic="mickeyImage"
+            class="card-home"
+          ></Card>
+        </div>
+        <div class="first-card">
+          <Card
+            :imageSrc="latestImage"
+            :profilePic="mickeyImage"
+            class="card-home"
+          ></Card>
+        </div>
+        <div class="first-card">
+          <Card
+            :imageSrc="latestImage"
+            :profilePic="mickeyImage"
+            class="card-home"
+          ></Card>
+        </div>
+      </div>
+      <div class="d-flex">
+        <div class="first-card">
+          <Card
+            :imageSrc="latestImage"
+            :profilePic="mickeyImage"
+            class="card-home"
+          ></Card>
+        </div>
+        <div class="first-card">
+          <Card
+            :imageSrc="latestImage"
+            :profilePic="mickeyImage"
+            class="card-home"
+          ></Card>
+        </div>
+        <div class="first-card">
+          <Card
+            :imageSrc="latestImage"
+            :profilePic="mickeyImage"
+            class="card-home"
+          ></Card>
+        </div>
+      </div>
+      <div class="d-flex">
+        <div class="first-card">
+          <Card
+            :imageSrc="latestImage"
+            :profilePic="mickeyImage"
+            class="card-home"
+          ></Card>
+        </div>
+        <div class="first-card">
+          <Card
+            :imageSrc="latestImage"
+            :profilePic="mickeyImage"
+            class="card-home"
+          ></Card>
+        </div>
+        <div class="first-card">
+          <Card
+            :imageSrc="latestImage"
+            :profilePic="mickeyImage"
+            class="card-home"
+          ></Card>
+        </div>
+      </div>
+      <div class="d-flex">
+        <div class="first-card">
+          <Card
+            :imageSrc="latestImage"
+            :profilePic="mickeyImage"
+            class="card-home"
+          ></Card>
+        </div>
+        <div class="first-card">
+          <Card
+            :imageSrc="latestImage"
+            :profilePic="mickeyImage"
+            class="card-home"
+          ></Card>
+        </div>
+        <div class="first-card">
+          <Card
+            :imageSrc="latestImage"
+            :profilePic="mickeyImage"
+            class="card-home"
+          ></Card>
+        </div>
+      </div>
+      <div class="d-flex">
+        <div class="first-card">
+          <Card
+            :imageSrc="latestImage"
+            :profilePic="mickeyImage"
+            class="card-home"
+          ></Card>
+        </div>
+        <div class="first-card">
+          <Card
+            :imageSrc="latestImage"
+            :profilePic="mickeyImage"
+            class="card-home"
+          ></Card>
+        </div>
+        <div class="first-card">
+          <Card
+            :imageSrc="latestImage"
+            :profilePic="mickeyImage"
+            class="card-home"
+          ></Card>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import latestImage from "@/assets/story-latest.webp";
+import mickeyImage from "@/assets/MICKEY.png";
 import { ref } from "vue";
 
 const selectedSort = ref("Newest");
@@ -100,6 +220,14 @@ const selectCategory = (category: string) => {
 </script>
 
 <style scoped>
+.first-card {
+  margin-left: 50px;
+}
+
+.card-home {
+  margin-left: 20px;
+}
+
 .search-box {
   position: relative;
   width: 100%;

@@ -42,10 +42,6 @@
     </div>
 
     <div class="container-upload container-feild">
-      <label for="image">Image Cover</label>
-      <Uploadimage v-model="images_cover"></Uploadimage>
-    </div>
-    <div class="container-upload container-feild">
       <label for="image">Additional Image</label>
       <Uploadimage v-model="images"></Uploadimage>
     </div>
@@ -67,6 +63,10 @@
 import { ref, onMounted } from "vue";
 import axios from "axios";
 import { useAuthStore } from "@/stores/authStore"; // Sesuaikan path ini
+import { useRouter } from "vue-router";
+import { routerKey } from "vue-router";
+
+const router = useRouter();
 
 const authStore = useAuthStore();
 const categories = ref([]);
@@ -74,14 +74,13 @@ const selectedCategory = ref(null);
 const dropdownVisible = ref(false);
 const title = ref("");
 const content = ref("");
-const images_cover = ref("");
 const images = ref("");
 
 onMounted(async () => {
   console.log("Using token:", authStore.token); // Log token
   try {
     const response = await axios.get(
-      "https://73ce-103-100-175-121.ngrok-free.app/api/categories",
+      "https://dcf3-103-100-175-121.ngrok-free.app/api/categories",
       {
         headers: {
           Authorization: `Bearer ${authStore.token}`,
@@ -113,8 +112,7 @@ const uploadStory = async () => {
   if (
     !title.value ||
     !content.value ||
-    !images_cover.value ||
-    !images.value ||
+    !images.value.length || // Pastikan lebih dari satu gambar
     !selectedCategory.value
   ) {
     alert("Please fill in all required fields.");
@@ -124,21 +122,25 @@ const uploadStory = async () => {
   const formData = new FormData();
   formData.append("title", title.value);
   formData.append("content", content.value);
-  formData.append("images_cover", images_cover.value); // Gambar cover
-  formData.append("images", images.value);
   formData.append("category_id", selectedCategory.value.id); // ID kategori
+
+  // Tambahkan prefix ke setiap file
+  images.value.forEach((image, index) => {
+    const fileName = image.name;
+    const prefixedFileName = `https://dcf3-103-100-175-121.ngrok-free.app/storage/images/${fileName}`;
+    formData.append(`images[${index}]`, image, prefixedFileName);
+  });
 
   try {
     console.log("Uploading story with data:", {
       title: title.value,
       content: content.value,
-      images_cover: images_cover.value,
-      images: images.value,
+      images: images.value.map((img) => img.name),
       categoryId: selectedCategory.value.id,
     });
 
     const response = await axios.post(
-      "https://73ce-103-100-175-121.ngrok-free.app/api/stories",
+      "https://dcf3-103-100-175-121.ngrok-free.app/api/stories",
       formData,
       {
         headers: {
@@ -148,7 +150,7 @@ const uploadStory = async () => {
       }
     );
     console.log("Story uploaded successfully:", response.data);
-    alert("Story uploaded successfully!");
+    router.push("/userprofile");
   } catch (error) {
     if (error.response) {
       console.error("Error uploading story:", error.response.data);

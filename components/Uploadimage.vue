@@ -7,12 +7,20 @@
         class="upload-input"
         @change="handleFileChange"
         ref="fileInput"
+        multiple
       />
       <div class="upload-content">
         <div class="upload-icon">
           <i class="fa-solid fa-image"></i>
         </div>
-        <span class="upload-text">Choose image</span>
+        <span class="upload-text">Choose images</span>
+      </div>
+    </div>
+    <div class="preview-container" v-if="files.length">
+      <div v-for="(file, index) in files" :key="index" class="preview-item">
+        <img :src="file.preview" alt="Preview" class="preview-image" />
+        <span class="file-name">{{ file.name }}</span>
+        <button class="remove-btn" @click="removeFile(index)">Remove</button>
       </div>
     </div>
   </div>
@@ -23,18 +31,41 @@ import { ref } from "vue";
 
 const emit = defineEmits(["update:modelValue"]);
 const fileInput = ref(null);
+const files = ref([]);
 
 const handleFileChange = (event) => {
-  const selectedFile = event.target.files[0];
-  if (selectedFile) {
-    emit("update:modelValue", selectedFile); // Emit file yang dipilih
-  } else {
-    emit("update:modelValue", null); // Emit null jika tidak ada file yang dipilih
-  }
+  const selectedFiles = Array.from(event.target.files);
+
+  // Tambahkan file baru ke dalam daftar file yang sudah ada, pastikan tidak ada duplikat
+  const newFiles = selectedFiles.filter(
+    (newFile) => !files.value.some((f) => f.file.name === newFile.name)
+  );
+
+  files.value.push(
+    ...newFiles.map((file) => ({
+      file,
+      preview: URL.createObjectURL(file),
+      name: file.name,
+    }))
+  );
+
+  // Emit semua file yang dipilih
+  emit(
+    "update:modelValue",
+    files.value.map((f) => f.file)
+  );
 };
 
 const triggerFileInput = () => {
   fileInput.value.click(); // Memicu klik pada input file
+};
+
+const removeFile = (index) => {
+  files.value.splice(index, 1); // Hapus file dari daftar
+  emit(
+    "update:modelValue",
+    files.value.map((f) => f.file)
+  );
 };
 </script>
 

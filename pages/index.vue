@@ -17,10 +17,25 @@
       rel="stylesheet"
     />
   </div>
+  <!-- Modal untuk login success -->
+  <div v-if="showLoginModal" class="modal">
+    <div class="modal-content">
+      <img
+        src="../asset/icon/iconSuccess.png"
+        alt="Success"
+        class="checkmark me-2"
+      />
+      <p class="modal-message my-auto">You have successfully logged in.</p>
+      <i class="fa-solid fa-xmark close ms-5" @click="closeLoginModal"></i>
+    </div>
+  </div>
   <WebHeader></WebHeader>
 
   <div>
-    <h1 class="text-welcome text-center mt-5">Welcome To Story Time</h1>
+    <div v-if="isAuthenticated">
+      <h2 class="text-welcome text-center mt-5">Hi, {{ user.username }}.</h2>
+    </div>
+    <h1 class="text-welcome text-center mt-2">Welcome To Story Time</h1>
     <p class="text-opening text-center mt-5">
       The world's most-loved social storytelling platform. Story time connects a
       global community of 90 million readers and writers
@@ -236,7 +251,11 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
+import { computed, ref } from "vue";
+import { useRouter } from "vue-router";
+import { useAuthStore } from "@/stores/authStore";
+
 import WebHeader from "../components/WebHeader.vue";
 import latestImage from "@/assets/story-latest.webp";
 import latestImage2 from "@/assets/story-latest-2.webp";
@@ -254,6 +273,28 @@ import romanceImage3 from "@/assets/romance-story-3.webp";
 import horrorImage from "@/assets/horror-story.webp";
 import horrorImage2 from "@/assets/horror-story-2.webp";
 import horrorImage3 from "@/assets/horror-story-3.webp";
+
+const authStore = useAuthStore();
+const isAuthenticated = computed(() => authStore.isAuthenticated);
+const user = authStore.user;
+
+// Modal visibility
+const showLoginModal = ref(false);
+
+// Close modal
+const closeLoginModal = () => {
+  showLoginModal.value = false;
+};
+
+// Simulasi login berhasil (bisa diganti dengan logika login sebenarnya)
+const onLoginSuccess = () => {
+  showLoginModal.value = true; // Tampilkan modal setelah login berhasil
+};
+
+// Memanggil fungsi onLoginSuccess ketika login berhasil (Misalnya)
+if (isAuthenticated.value) {
+  onLoginSuccess(); // Modal akan muncul setelah login berhasil
+}
 </script>
 
 <style scoped>
@@ -408,5 +449,46 @@ import horrorImage3 from "@/assets/horror-story-3.webp";
   width: 90%;
   margin: 20px auto;
   border: 1px solid #ccc;
+}
+
+.modal {
+  display: flex;
+  justify-content: center;
+  align-items: start;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+}
+
+.modal-content {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  background-color: #ffffff;
+  margin: 2% auto;
+  padding: 20px;
+  border: none;
+  max-width: 400px;
+  text-align: center;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.modal-message {
+  font-size: 15px;
+  color: #333;
+  font-weight: 600;
+}
+
+.close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  cursor: pointer;
 }
 </style>

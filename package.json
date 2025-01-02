@@ -11,11 +11,13 @@
   },
   "dependencies": {
     "@nuxtjs/axios": "^5.13.6",
+    "@nuxtjs/proxy": "^2.1.0",
     "@pinia/nuxt": "^0.9.0",
     "boostrap": "^2.0.0",
     "bootstrap": "^5.3.3",
     "jquery": "^3.7.1",
     "nuxt": "^3.14.1592",
+    "seedrandom": "^3.0.5",
     "vue": "latest",
     "vue-router": "latest",
     "vuex": "^4.0.2"
