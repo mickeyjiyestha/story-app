@@ -3,28 +3,34 @@
     rel="stylesheet"
     href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
   />
-  <div class="d-flex">
-    <div class="card">
-      <div class="image-container">
-        <img :src="imageSrc" class="card-img-top card-image" alt="..." />
+  <div class="d-flex" v-if="story">
+    <div class="card" style="width: 18rem">
+      <div class="image-container position-relative">
+        <img
+          :src="getImageUrl(story.images[0].filename)"
+          class="card-img-top card-image"
+          alt="Story Image"
+        />
         <bookmark class="bookmark-icon"></bookmark>
-        <!-- Bookmark tetap ada -->
       </div>
       <div class="card-body">
-        <h5 class="card-title">Path of Luminous Forest</h5>
-        <p class="card-text">
-          A mystical journey unfolds as a hidden path of glowing light leads to
-          an enchanted castle, revealing secrets of an ancient world.
-        </p>
-        <div class="footer-card">
-          <img :src="profilePic" class="profile-pic" alt="Profile Picture" />
-          <div>
-            <p class="mb-0">Mickey</p>
+        <h5 class="card-title">{{ story.title || "Untitled" }}</h5>
+        <p class="card-text">{{ truncateContent(story.content) }}</p>
+        <div class="footer-card d-flex align-items-center">
+          <img
+            :src="avatar || '/path/to/default-avatar.jpg'"
+            class="profile-pic rounded-circle"
+            alt="Profile Picture"
+          />
+          <div class="ml-2">
+            <p class="mb-0">{{ story.user_name || "Guest" }}</p>
           </div>
           <div class="d-flex align-items-center ml-auto">
-            <p class="mb-0 mr-3">17 July 2023</p>
+            <p class="mb-0 mr-3">
+              {{ new Date(story.created_at).toLocaleDateString() }}
+            </p>
             <div class="category">
-              <p class="mb-0">Romance</p>
+              <p class="mb-0">{{ getCategoryName(story.category_id) }}</p>
             </div>
           </div>
         </div>
@@ -33,18 +39,40 @@
   </div>
 </template>
 
-<script>
-export default {
-  props: {
-    imageSrc: {
-      type: String,
-      required: true,
-    },
-    profilePic: {
-      type: String,
-      required: true,
-    },
+<script setup>
+import { defineProps } from "vue";
+
+defineProps({
+  story: {
+    type: Object,
+    required: true,
   },
+  user: {
+    type: Object,
+    required: true,
+  },
+});
+
+// Fungsi untuk mendapatkan URL gambar lengkap
+const getImageUrl = (filename) => {
+  const apiBaseUrl = "https://fbec-103-100-175-121.ngrok-free.app"; // Ganti dengan URL API Anda
+  return `${apiBaseUrl}${filename}`;
+};
+
+// Fungsi untuk mendapatkan nama kategori berdasarkan ID
+const getCategoryName = (categoryId) => {
+  const categories = {
+    1: "Romance",
+    2: "Fantasy",
+    3: "Adventure",
+    4: "Horror",
+  };
+  return categories[categoryId] || "Unknown";
+};
+
+const truncateContent = (content) => {
+  if (!content) return "No content available";
+  return content.length > 60 ? content.slice(0, 60) + "..." : content;
 };
 </script>
 
@@ -94,7 +122,7 @@ export default {
 .bookmark-icon {
   position: absolute;
   bottom: 40px; /* Menempatkan bookmark di bagian bawah */
-  right: 30px; /* Menempatkan bookmark di bagian kanan */
+  left: 400px;
   background-color: #466543;
   border-radius: 100%; /* Membuat bentuk bookmark melingkar */
   padding: 10px; /* Padding untuk memperbesar ikon */

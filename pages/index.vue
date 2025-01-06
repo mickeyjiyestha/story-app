@@ -68,46 +68,11 @@
       </div>
 
       <div class="card-container">
-        <div class="first-card">
+        <div v-for="(story, index) in stories" :key="index" class="first-card">
           <Card
-            :imageSrc="latestImage"
-            :profilePic="mickeyImage"
-            class="card-home"
-          ></Card>
-        </div>
-        <div class="sec-card">
-          <Card
-            :imageSrc="latestImage2"
-            :profilePic="mickeyImage"
-            class="card-home"
-          ></Card>
-        </div>
-        <div class="sec-card">
-          <Card
-            :imageSrc="latestImage3"
-            :profilePic="mickeyImage"
-            class="card-home"
-          ></Card>
-        </div>
-        <div class="sec-card">
-          <Card
-            :imageSrc="latestImage4"
-            :profilePic="mickeyImage"
-            class="card-home"
-          ></Card>
-        </div>
-        <div class="sec-card">
-          <Card
-            :imageSrc="latestImage5"
-            :profilePic="mickeyImage"
-            class="card-home"
-          ></Card>
-        </div>
-        <div class="sec-card">
-          <Card
-            :imageSrc="latestImage6"
-            :profilePic="mickeyImage"
-            class="card-home"
+            :story="story"
+            :imageSrc="story.image"
+            :profilePic="story.profilePic"
           ></Card>
         </div>
       </div>
@@ -252,27 +217,9 @@
 </template>
 
 <script setup>
-import { computed, ref } from "vue";
-import { useRouter } from "vue-router";
+import { computed, ref, onMounted } from "vue";
 import { useAuthStore } from "@/stores/authStore";
-
-import WebHeader from "../components/WebHeader.vue";
-import latestImage from "@/assets/story-latest.webp";
-import latestImage2 from "@/assets/story-latest-2.webp";
-import latestImage3 from "@/assets/story-latest-3.webp";
-import latestImage4 from "@/assets/story-latest-4.webp";
-import latestImage5 from "@/assets/story-latest-5.webp";
-import latestImage6 from "@/assets/story-latest-6.webp";
-import comedyImage from "@/assets/comedy-story.webp";
-import comedyImage2 from "@/assets/comedy-story-2.webp";
-import comedyImage3 from "@/assets/comedy-story-3.webp";
-import mickeyImage from "@/assets/MICKEY.png";
-import romanceImage from "@/assets/romance-story.webp";
-import romanceImage2 from "@/assets/romance-story-2.webp";
-import romanceImage3 from "@/assets/romance-story-3.webp";
-import horrorImage from "@/assets/horror-story.webp";
-import horrorImage2 from "@/assets/horror-story-2.webp";
-import horrorImage3 from "@/assets/horror-story-3.webp";
+import { fetchAllStories } from "@/services/apiService";
 
 const authStore = useAuthStore();
 const isAuthenticated = computed(() => authStore.isAuthenticated);
@@ -281,19 +228,41 @@ const user = authStore.user;
 // Modal visibility
 const showLoginModal = ref(false);
 
+// Stories state
+const stories = ref([]);
+const apiBaseUrl = "https://fbec-103-100-175-121.ngrok-free.app"; // Ganti dengan URL API Anda
+const token = authStore.token; // Asumsikan Anda memiliki token di authStore
+
 // Close modal
 const closeLoginModal = () => {
   showLoginModal.value = false;
 };
 
-// Simulasi login berhasil (bisa diganti dengan logika login sebenarnya)
+onMounted(async () => {
+  try {
+    const storiesData = await fetchAllStories(token, apiBaseUrl); // Ambil data stories langsung
+    console.log("API Response:", storiesData); // Log data stories untuk memastikan isinya
+
+    // Validasi jika data stories ada
+    if (storiesData && Array.isArray(storiesData)) {
+      stories.value = storiesData; // Set data stories ke variabel stories
+      console.log("Valid Stories:", stories.value); // Debugging: Log stories yang sudah di-set
+    } else {
+      console.error("No stories found in the response.");
+    }
+  } catch (error) {
+    console.error("Failed to fetch stories:", error);
+  }
+});
+
+// Simulasi login berhasil
 const onLoginSuccess = () => {
-  showLoginModal.value = true; // Tampilkan modal setelah login berhasil
+  showLoginModal.value = true;
 };
 
-// Memanggil fungsi onLoginSuccess ketika login berhasil (Misalnya)
+// Tampilkan modal jika sudah login
 if (isAuthenticated.value) {
-  onLoginSuccess(); // Modal akan muncul setelah login berhasil
+  onLoginSuccess();
 }
 </script>
 
@@ -355,6 +324,7 @@ if (isAuthenticated.value) {
 
 .first-card {
   margin-left: 100px;
+  margin-right: 200px;
 }
 
 .card-container {

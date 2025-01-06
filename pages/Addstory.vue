@@ -62,7 +62,7 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import axios from "axios";
-import { useAuthStore } from "@/stores/authStore"; // Sesuaikan path ini
+import { useAuthStore } from "@/stores/authStore";
 import { useRouter } from "vue-router";
 import { routerKey } from "vue-router";
 
@@ -77,10 +77,10 @@ const content = ref("");
 const images = ref("");
 
 onMounted(async () => {
-  console.log("Using token:", authStore.token); // Log token
+  console.log("Using token:", authStore.token);
   try {
     const response = await axios.get(
-      "https://dcf3-103-100-175-121.ngrok-free.app/api/categories",
+      "https://fbec-103-100-175-121.ngrok-free.app/api/categories",
       {
         headers: {
           Authorization: `Bearer ${authStore.token}`,
@@ -88,31 +88,28 @@ onMounted(async () => {
         },
       }
     );
-    console.log("Categories fetched:", response.data); // Log data kategori
-    categories.value = response.data.categories; // Akses array kategori dari objek
+    console.log("Categories fetched:", response.data);
+    categories.value = response.data.categories;
   } catch (error) {
     console.error("Error fetching categories:", error);
   }
 });
 
-// Fungsi untuk menangani pemilihan kategori
 const selectCategory = (category) => {
-  selectedCategory.value = category; // Simpan objek kategori
-  dropdownVisible.value = false; // Sembunyikan dropdown setelah memilih kategori
+  selectedCategory.value = category;
+  dropdownVisible.value = false;
   console.log("Selected category:", selectedCategory.value);
 };
 
-// Fungsi untuk toggle dropdown
 const toggleDropdown = () => {
-  dropdownVisible.value = !dropdownVisible.value; // Toggle visibilitas dropdown
+  dropdownVisible.value = !dropdownVisible.value;
 };
 
-// Fungsi untuk mengunggah cerita
 const uploadStory = async () => {
   if (
     !title.value ||
     !content.value ||
-    !images.value.length || // Pastikan lebih dari satu gambar
+    !images.value.length ||
     !selectedCategory.value
   ) {
     alert("Please fill in all required fields.");
@@ -122,12 +119,11 @@ const uploadStory = async () => {
   const formData = new FormData();
   formData.append("title", title.value);
   formData.append("content", content.value);
-  formData.append("category_id", selectedCategory.value.id); // ID kategori
+  formData.append("category_id", selectedCategory.value.id);
 
-  // Tambahkan prefix ke setiap file
   images.value.forEach((image, index) => {
     const fileName = image.name;
-    const prefixedFileName = `https://dcf3-103-100-175-121.ngrok-free.app/storage/images/${fileName}`;
+    const prefixedFileName = `https://fbec-103-100-175-121.ngrok-free.app/storage/images/${fileName}`;
     formData.append(`images[${index}]`, image, prefixedFileName);
   });
 
@@ -140,7 +136,7 @@ const uploadStory = async () => {
     });
 
     const response = await axios.post(
-      "https://dcf3-103-100-175-121.ngrok-free.app/api/stories",
+      "https://fbec-103-100-175-121.ngrok-free.app/api/stories",
       formData,
       {
         headers: {

@@ -58,24 +58,18 @@
       </div>
       <div>
         <div class="card-container">
-          <div class="first-card">
-            <card
-              :imageSrc="latestImage"
-              :profilePic="mickeyImage"
-              ass="card-home"
-            ></card>
+          <!-- Loop through stories and pass data to each card component -->
+          <div
+            v-for="(story, index) in stories"
+            :key="index"
+            class="first-card"
+          >
+            <Card
+              :story="story"
+              :imageSrc="story.image"
+              :profilePic="story.profilePic"
+            ></Card>
           </div>
-          <card :imageSrc="latestImage2" :profilePic="mickeyImage"></card>
-        </div>
-        <div class="card-container">
-          <div class="first-card">
-            <card
-              :imageSrc="latestImage"
-              :profilePic="mickeyImage"
-              ass="card-home"
-            ></card>
-          </div>
-          <card :imageSrc="latestImage2" :profilePic="mickeyImage"></card>
         </div>
       </div>
     </div>
@@ -205,9 +199,11 @@ import { ref, onBeforeMount } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/authStore";
 import axios from "axios";
-import { fetchUserData, profilePicture } from "@/services/apiService";
-import latestImage from "@/assets/story-latest.webp";
-import latestImage2 from "@/assets/story-latest-2.webp";
+import {
+  fetchUserData,
+  profilePicture,
+  fetchUserStories,
+} from "@/services/apiService";
 import { add } from "@tensorflow/tfjs";
 
 const router = useRouter();
@@ -221,6 +217,8 @@ const avatar = ref("");
 const password = ref("");
 const newPassword = ref("");
 const confirm_password = ref("");
+
+const stories = ref([]); // Menyimpan data cerita
 
 const addStory = () => {
   router.push("/addstory");
@@ -339,36 +337,56 @@ const updateProfile = async () => {
 };
 
 onMounted(async () => {
-  authStore.loadToken(); // Ensure the token is loaded
+  authStore.loadToken(); // Pastikan token sudah dimuat
 
   if (authStore.isAuthenticated) {
-    const userId = authStore.user?.id; // Use the id property
-    console.log("User ID:", userId); // Log the user ID
+    const userId = authStore.user?.id; // Gunakan properti id
+    console.log("User ID:", userId); // Log ID pengguna
     if (userId) {
       const config = useRuntimeConfig();
-      const apiBaseUrl = config.public.apiBaseUrl; // Get the public API base URL
+      const apiBaseUrl = config.public.apiBaseUrl; // Ambil base URL API
 
       try {
-        const response = await fetchUserData(
+        // Ambil data pengguna
+        const userResponse = await fetchUserData(
           userId,
           authStore.token,
           apiBaseUrl
-        ); // Pass the base URL
-        console.log("User Data:", response); // Log the full response
+        );
+        console.log("User Data:", userResponse);
 
-        // Access user data correctly
-        if (response.data && response.data.user) {
-          name.value = response.data.user.name || "Guest"; // Default to "Guest" if name is null
-          email.value = response.data.user.email || "No email available"; // Default message
-          about.value = response.data.user.about || "No description available."; // Default message
-          avatar.value = response.data.user.avatar || ""; // Default to empty string if avatar is null
+        if (userResponse?.data?.user) {
+          name.value = userResponse.data.user.name || "Guest";
+          email.value = userResponse.data.user.email || "No email available";
+          about.value =
+            userResponse.data.user.about || "No description available.";
+          avatar.value =
+            userResponse.data.user.avatar || "/path/to/default-avatar.jpg"; // Gambar default
         } else {
           console.error("User data not found in response.");
         }
+
+        // Ambil cerita pengguna
+        const storiesResponse = await fetchUserStories(
+          userId,
+          authStore.token,
+          apiBaseUrl
+        );
+        console.log("User Stories:", storiesResponse);
+
+        // Pastikan stories diupdate dengan benar
+        if (storiesResponse?.data?.stories) {
+          // Jika stories adalah array, gunakan langsung
+          stories.value = Array.isArray(storiesResponse.data.stories)
+            ? storiesResponse.data.stories
+            : [];
+        } else {
+          console.error("User stories not found in response.");
+        }
       } catch (error) {
         console.error(
-          "Error fetching user data:",
-          error.response?.data || error.message
+          "Error fetching user data or stories:",
+          error?.response?.data || error.message
         );
       }
     } else {
@@ -376,7 +394,7 @@ onMounted(async () => {
     }
   } else {
     console.error("User is not authenticated. Redirecting to login.");
-    // Optionally, you can redirect to the login page here
+    router.push("/login"); // Redirect to login if not authenticated
   }
 });
 </script>
@@ -457,7 +475,7 @@ onMounted(async () => {
 }
 
 .first-card {
-  margin-right: 50px;
+  margin-right: 300px;
 }
 
 .card-home {
@@ -465,7 +483,9 @@ onMounted(async () => {
 }
 
 .card-container {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* Membuat dua kolom */
+  gap: 20px; /* Menambahkan jarak antar kartu */
   overflow-x: auto;
   overflow-y: hidden;
   padding: 0 35px;
