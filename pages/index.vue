@@ -68,11 +68,16 @@
       </div>
 
       <div class="card-container">
-        <div v-for="(story, index) in stories" :key="index" class="first-card">
+        <div
+          v-for="(story, index) in categoryHorror"
+          :key="index"
+          class="first-card"
+        >
           <Card
             :story="story"
             :imageSrc="story.image"
             :profilePic="story.profilePic"
+            :link="`/story/${story.id}`"
           ></Card>
         </div>
       </div>
@@ -129,25 +134,16 @@
       </div>
 
       <div class="card-container">
-        <div class="first-card">
+        <div
+          v-for="(story, index) in categoryRomance"
+          :key="index"
+          class="first-card"
+        >
           <Card
-            :imageSrc="romanceImage"
-            :profilePic="mickeyImage"
-            class="card-home"
-          ></Card>
-        </div>
-        <div class="sec-card">
-          <Card
-            :imageSrc="romanceImage2"
-            :profilePic="mickeyImage"
-            class="card-home"
-          ></Card>
-        </div>
-        <div class="sec-card">
-          <Card
-            :imageSrc="romanceImage3"
-            :profilePic="mickeyImage"
-            class="card-home"
+            :story="story"
+            :imageSrc="story.image"
+            :profilePic="story.profilePic"
+            :link="`/story/${story.id}`"
           ></Card>
         </div>
       </div>
@@ -220,6 +216,8 @@
 import { computed, ref, onMounted } from "vue";
 import { useAuthStore } from "@/stores/authStore";
 import { fetchAllStories } from "@/services/apiService";
+import { fetchStoriesByHorror } from "@/services/apiService";
+import { fetchStoriesByRomance } from "@/services/apiService";
 
 const authStore = useAuthStore();
 const isAuthenticated = computed(() => authStore.isAuthenticated);
@@ -230,7 +228,10 @@ const showLoginModal = ref(false);
 
 // Stories state
 const stories = ref([]);
-const apiBaseUrl = "https://fbec-103-100-175-121.ngrok-free.app"; // Ganti dengan URL API Anda
+const categoryHorror = ref([]);
+const categoryRomance = ref([]);
+
+const apiBaseUrl = "https://23bd-103-100-175-121.ngrok-free.app"; // Ganti dengan URL API Anda
 const token = authStore.token; // Asumsikan Anda memiliki token di authStore
 
 // Close modal
@@ -240,18 +241,33 @@ const closeLoginModal = () => {
 
 onMounted(async () => {
   try {
-    const storiesData = await fetchAllStories(token, apiBaseUrl); // Ambil data stories langsung
-    console.log("API Response:", storiesData); // Log data stories untuk memastikan isinya
-
-    // Validasi jika data stories ada
+    // Fetch semua cerita
+    const storiesData = await fetchAllStories(token, apiBaseUrl);
     if (storiesData && Array.isArray(storiesData)) {
-      stories.value = storiesData; // Set data stories ke variabel stories
-      console.log("Valid Stories:", stories.value); // Debugging: Log stories yang sudah di-set
+      stories.value = storiesData;
+      console.log("Fetched All Stories:", stories.value);
     } else {
       console.error("No stories found in the response.");
     }
+
+    // Fetch cerita berdasarkan kategori
+    const categoryStories = await fetchStoriesByHorror(1); // Ganti ID kategori sesuai kebutuhan
+    if (categoryStories && Array.isArray(categoryStories)) {
+      categoryHorror.value = categoryStories;
+      console.log("Fetched Stories By Horror:", categoryHorror.value);
+    } else {
+      console.error("No stories found for the specified category.");
+    }
+
+    const storiesByRomance = await fetchStoriesByRomance(3); // Ganti ID kategori sesuai kebutuhan
+    if (storiesByRomance && Array.isArray(storiesByRomance)) {
+      categoryRomance.value = storiesByRomance;
+      console.log("Fetched Stories By Romance:", categoryRomance.value);
+    } else {
+      console.error("No stories found for the specified category.");
+    }
   } catch (error) {
-    console.error("Failed to fetch stories:", error);
+    console.error("Error during onMounted execution:", error);
   }
 });
 

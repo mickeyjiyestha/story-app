@@ -4,33 +4,38 @@
     href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
   />
   <div class="d-flex" v-if="story">
-    <div class="card" style="width: 18rem">
+    <div
+      class="card"
+      style="width: 18rem; cursor: pointer"
+      @click="navigateToStory"
+    >
       <div class="image-container position-relative">
         <img
-          :src="getImageUrl(story.images[0].filename)"
+          :src="getImageUrl(story.images[0].url)"
           class="card-img-top card-image"
           alt="Story Image"
         />
         <bookmark class="bookmark-icon"></bookmark>
+        <!-- <delete class=""></delete> -->
       </div>
       <div class="card-body">
         <h5 class="card-title">{{ story.title || "Untitled" }}</h5>
         <p class="card-text">{{ truncateContent(story.content) }}</p>
         <div class="footer-card d-flex align-items-center">
           <img
-            :src="avatar || '/path/to/default-avatar.jpg'"
+            :src="story.user.avatar || '/path/to/default-avatar.jpg'"
             class="profile-pic rounded-circle"
             alt="Profile Picture"
           />
-          <div class="ml-2">
-            <p class="mb-0">{{ story.user_name || "Guest" }}</p>
+          <div class="ml-2 mr-3">
+            <p class="mb-0">{{ story.user.username || "Guest" }}</p>
           </div>
           <div class="d-flex align-items-center ml-auto">
             <p class="mb-0 mr-3">
               {{ new Date(story.created_at).toLocaleDateString() }}
             </p>
             <div class="category">
-              <p class="mb-0">{{ getCategoryName(story.category_id) }}</p>
+              <p class="mb-0">{{ story.category.name }}</p>
             </div>
           </div>
         </div>
@@ -41,6 +46,9 @@
 
 <script setup>
 import { defineProps } from "vue";
+import { useRouter } from "vue-router";
+
+const router = useRouter();
 
 defineProps({
   story: {
@@ -54,9 +62,9 @@ defineProps({
 });
 
 // Fungsi untuk mendapatkan URL gambar lengkap
-const getImageUrl = (filename) => {
-  const apiBaseUrl = "https://fbec-103-100-175-121.ngrok-free.app"; // Ganti dengan URL API Anda
-  return `${apiBaseUrl}${filename}`;
+const getImageUrl = (url) => {
+  const apiBaseUrl = "https://23bd-103-100-175-121.ngrok-free.app"; // Ganti dengan URL API Anda
+  return `${apiBaseUrl}${url}`;
 };
 
 // Fungsi untuk mendapatkan nama kategori berdasarkan ID
@@ -73,6 +81,10 @@ const getCategoryName = (categoryId) => {
 const truncateContent = (content) => {
   if (!content) return "No content available";
   return content.length > 60 ? content.slice(0, 60) + "..." : content;
+};
+
+const navigateToStory = () => {
+  router.push(`/detail`);
 };
 </script>
 

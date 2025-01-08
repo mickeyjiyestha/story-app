@@ -1,5 +1,5 @@
 <template>
-  <button class="btn">Adventure</button>
+  <button class="btn">{{ label }}</button>
 </template>
 
 <style scoped>
@@ -17,3 +17,18 @@
   font-size: 20px;
 }
 </style>
+
+<script setup>
+import { defineProps } from "vue";
+
+defineProps({
+  label: {
+    type: String,
+    default: "Button", // Nilai default jika prop label tidak diberikan
+  },
+  backgroundColor: {
+    type: String,
+    default: "#f0f5ed", // Nilai default warna latar belakang
+  },
+});
+</script>

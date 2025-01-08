@@ -41,8 +41,8 @@
     </div>
 
     <div class="d-flex container-menu">
-      <Buttoncategory class="menu"></Buttoncategory>
-      <Buttoncategory></Buttoncategory>
+      <Buttoncategory label="My Story" backgroundColor="#d9f8c4" />
+      <Buttoncategory label="Bookmark" backgroundColor="#f8d9e0" />
     </div>
 
     <div class="d-flex mt-5 bottom-container justify-content-between">
@@ -57,7 +57,7 @@
         <Buttonfull :buttonText="'Write Now'" @click="addStory"></Buttonfull>
       </div>
       <div>
-        <div class="card-container">
+        <div class="card-container" v-if="stories.length > 0">
           <!-- Loop through stories and pass data to each card component -->
           <div
             v-for="(story, index) in stories"
@@ -70,6 +70,14 @@
               :profilePic="story.profilePic"
             ></Card>
           </div>
+        </div>
+        <div v-else class="containernostories">
+          <h1 class="nostories-h1">No Stories Yet</h1>
+          <p class="nostories-p">
+            You haven't shared any stories yet. Start your fitness journey
+            today!
+          </p>
+          <img src="@/assets/noStoies.svg" alt="" />
         </div>
       </div>
     </div>
@@ -400,6 +408,23 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+.nostories-h1 {
+  margin-left: 180px;
+  font-family: Playfair Display, sans-serif;
+  margin-bottom: 20px;
+  font-weight: 500;
+}
+
+.nostories-p {
+  font-family: DM Sans, sans-serif;
+  font-size: 20px;
+}
+
+.containernostories {
+  margin-right: 230px;
+  margin-bottom: 20px;
+}
+
 .container-cancel {
   margin-right: 20px;
 }

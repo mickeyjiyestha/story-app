@@ -3,7 +3,10 @@
 
   <div>
     <div class="d-flex">
-      <i class="fa-solid fa-arrow-left arrow-left"></i>
+      <nuxt-link to="/userprofile">
+        <i class="fa-solid fa-arrow-left arrow-left"></i
+      ></nuxt-link>
+
       <div class="container-header">
         <h1 class="text-header">Write Story</h1>
       </div>
@@ -80,7 +83,7 @@ onMounted(async () => {
   console.log("Using token:", authStore.token);
   try {
     const response = await axios.get(
-      "https://fbec-103-100-175-121.ngrok-free.app/api/categories",
+      "https://23bd-103-100-175-121.ngrok-free.app/api/categories",
       {
         headers: {
           Authorization: `Bearer ${authStore.token}`,
@@ -123,7 +126,7 @@ const uploadStory = async () => {
 
   images.value.forEach((image, index) => {
     const fileName = image.name;
-    const prefixedFileName = `https://fbec-103-100-175-121.ngrok-free.app/storage/images/${fileName}`;
+    const prefixedFileName = `https://23bd-103-100-175-121.ngrok-free.app/storage/images/${fileName}`;
     formData.append(`images[${index}]`, image, prefixedFileName);
   });
 
@@ -136,7 +139,7 @@ const uploadStory = async () => {
     });
 
     const response = await axios.post(
-      "https://fbec-103-100-175-121.ngrok-free.app/api/stories",
+      "https://23bd-103-100-175-121.ngrok-free.app/api/stories",
       formData,
       {
         headers: {
@@ -167,6 +170,11 @@ const uploadStory = async () => {
 </script>
 
 <style scoped>
+.arrow-left {
+  text-decoration: none;
+  color: black;
+}
+
 .container-upload {
   margin-top: 40px;
 }
