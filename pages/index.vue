@@ -69,7 +69,7 @@
 
       <div class="card-container">
         <div
-          v-for="(story, index) in categoryHorror"
+          v-for="(story, index) in categoryLatest"
           :key="index"
           class="first-card"
         >
@@ -100,21 +100,11 @@
       <!-- Kontainer untuk kartu -->
       <div class="card-container-comedy d-flex">
         <div class="first-card">
-          <CardBig
-            :imageSrc="comedyImage"
-            :profilePic="mickeyImage"
-            class="card-home"
-          ></CardBig>
+          <CardBig :story="categoryComedy[0]" class="card-home"></CardBig>
         </div>
         <div class="sec-card-comedy">
-          <Cardsmall
-            :imageSrc="comedyImage2"
-            :profilePic="mickeyImage"
-          ></Cardsmall>
-          <Cardsmall
-            :imageSrc="comedyImage3"
-            :profilePic="mickeyImage"
-          ></Cardsmall>
+          <Cardsmall :story="categoryComedy[1]"></Cardsmall>
+          <Cardsmall :story="categoryComedy[2]"></Cardsmall>
         </div>
       </div>
     </div>
@@ -166,21 +156,11 @@
       <!-- Kontainer untuk kartu -->
       <div class="card-container-comedy d-flex">
         <div class="first-card">
-          <CardBig
-            :imageSrc="horrorImage"
-            :profilePic="mickeyImage"
-            class="card-home"
-          ></CardBig>
+          <CardBig :story="categoryHorror[0]" class="card-home"></CardBig>
         </div>
         <div class="sec-card-comedy">
-          <Cardsmall
-            :imageSrc="horrorImage2"
-            :profilePic="mickeyImage"
-          ></Cardsmall>
-          <Cardsmall
-            :imageSrc="horrorImage3"
-            :profilePic="mickeyImage"
-          ></Cardsmall>
+          <Cardsmall :story="categoryHorror[1]"></Cardsmall>
+          <Cardsmall :story="categoryHorror[2]"></Cardsmall>
         </div>
       </div>
     </div>
@@ -215,9 +195,13 @@
 <script setup>
 import { computed, ref, onMounted } from "vue";
 import { useAuthStore } from "@/stores/authStore";
-import { fetchAllStories } from "@/services/apiService";
-import { fetchStoriesByHorror } from "@/services/apiService";
-import { fetchStoriesByRomance } from "@/services/apiService";
+import {
+  fetchAllStories,
+  fetchStoriesByLatest,
+  fetchStoriesByRomance,
+  fetchStoriesByComedy,
+  fetchStoriesByHorror,
+} from "@/services/apiService";
 
 const authStore = useAuthStore();
 const isAuthenticated = computed(() => authStore.isAuthenticated);
@@ -228,10 +212,12 @@ const showLoginModal = ref(false);
 
 // Stories state
 const stories = ref([]);
-const categoryHorror = ref([]);
+const categoryLatest = ref([]);
 const categoryRomance = ref([]);
+const categoryComedy = ref([]);
+const categoryHorror = ref([]);
 
-const apiBaseUrl = "https://23bd-103-100-175-121.ngrok-free.app"; // Ganti dengan URL API Anda
+const apiBaseUrl = "https://e016-103-19-231-196.ngrok-free.app"; // Ganti dengan URL API Anda
 const token = authStore.token; // Asumsikan Anda memiliki token di authStore
 
 // Close modal
@@ -251,18 +237,34 @@ onMounted(async () => {
     }
 
     // Fetch cerita berdasarkan kategori
-    const categoryStories = await fetchStoriesByHorror(1); // Ganti ID kategori sesuai kebutuhan
+    const categoryStories = await fetchStoriesByLatest(1); // Ganti ID kategori sesuai kebutuhan
     if (categoryStories && Array.isArray(categoryStories)) {
-      categoryHorror.value = categoryStories;
-      console.log("Fetched Stories By Horror:", categoryHorror.value);
+      categoryLatest.value = categoryStories;
+      console.log("Fetched Stories By Latest:", categoryLatest.value);
     } else {
       console.error("No stories found for the specified category.");
     }
 
-    const storiesByRomance = await fetchStoriesByRomance(3); // Ganti ID kategori sesuai kebutuhan
+    const storiesByRomance = await fetchStoriesByRomance(2); // Ganti ID kategori sesuai kebutuhan
     if (storiesByRomance && Array.isArray(storiesByRomance)) {
       categoryRomance.value = storiesByRomance;
       console.log("Fetched Stories By Romance:", categoryRomance.value);
+    } else {
+      console.error("No stories found for the specified category.");
+    }
+
+    const storiesByComedy = await fetchStoriesByComedy(3); // Ganti ID kategori sesuai kebutuhan
+    if (storiesByComedy && Array.isArray(storiesByComedy)) {
+      categoryComedy.value = storiesByComedy;
+      console.log("Fetched Stories By Comedy:", categoryComedy.value);
+    } else {
+      console.error("No stories found for the specified category.");
+    }
+
+    const storiesByHorror = await fetchStoriesByHorror(1); // Ganti ID kategori sesuai kebutuhan
+    if (storiesByHorror && Array.isArray(storiesByHorror)) {
+      categoryHorror.value = storiesByHorror;
+      console.log("Fetched Stories By Horror:", categoryHorror.value);
     } else {
       console.error("No stories found for the specified category.");
     }
@@ -283,6 +285,10 @@ if (isAuthenticated.value) {
 </script>
 
 <style scoped>
+.first-card {
+  margin-left: 90px;
+}
+
 .container-category {
   margin-left: 100px;
 }
@@ -337,29 +343,27 @@ if (isAuthenticated.value) {
 .latest-container h1 {
   margin-left: 100px;
 }
-
-.first-card {
-  margin-left: 100px;
-  margin-right: 200px;
-}
-
 .card-container {
   display: flex;
-  overflow-x: auto; /* Izinkan pengguliran horizontal */
-  overflow-y: hidden; /* Sembunyikan pengguliran vertikal */
-  padding: 10px 0;
+  margin-right: 10px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0 35px;
   margin-bottom: 10px;
   scrollbar-width: none;
+  margin-right: 100px;
+}
+
+.card {
+  border: none;
+  width: 300px; /* Adjust the width as needed */
+  margin: 0;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Optional: for better visuals */
 }
 
 .card-container::-webkit-scrollbar {
   display: none;
 }
-
-.card-home {
-  margin-left: 20px;
-}
-
 .text-welcome {
   font-family: Playfair Display, sans-serif;
   font-weight: 800;

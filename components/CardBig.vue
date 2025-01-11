@@ -1,109 +1,156 @@
 <template>
-  <link
-    rel="stylesheet"
-    href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
-  />
-  <div class="d-flex" style="height: 100vh">
-    <div class="card">
-      <div class="image-container">
-        <img :src="imageSrc" class="card-img-top card-image" alt="..." />
+  <div v-if="story" class="d-flex">
+    <div class="card" style="cursor: pointer" @click="navigateToStory">
+      <div class="image-container position-relative">
+        <img
+          :src="getImageUrl(story.images?.[0]?.url)"
+          class="card-img-top card-image"
+          alt="Story Image"
+        />
         <bookmark class="bookmark-icon"></bookmark>
-        <!-- Bookmark tetap ada -->
       </div>
       <div class="card-body">
-        <h5 class="card-title">Path of Luminous Forest</h5>
-        <p class="card-text">
-          A mystical journey unfolds as a hidden path of glowing light leads to
-          an enchanted castle, revealing secrets of an ancient world. A mystical
-          journey unfolds as a hidden path of glowing light leads to an
-          enchanted castle, revealing secrets of an ancient world. A mystical
-          journey unfolds as a hidden path of glowing light leads to an
-          enchanted castle, revealing secrets of an ancient world. A mystical
-          journey unfolds as a hidden path of glowing light leads to an
-          enchanted castle, revealing secrets of an ancient world.
-        </p>
-        <div class="footer-card">
-          <img :src="profilePic" class="profile-pic" alt="Profile Picture" />
-          <div>
-            <p class="mb-0">Mickey</p>
-          </div>
-          <div class="d-flex align-items-center ml-auto">
-            <p class="mb-0 mr-3">17 July 2023</p>
-            <div class="category">
-              <p class="mb-0">Romance</p>
-            </div>
-          </div>
+        <h5 class="card-title">{{ story.title || "Untitled" }}</h5>
+        <p class="card-text">{{ truncateContent(story.content) }}</p>
+      </div>
+      <div class="footer-card d-flex align-items-center">
+        <img
+          :src="story.user?.avatar || '/path/to/default-avatar.jpg'"
+          class="profile-pic rounded-circle"
+          alt="Profile Picture"
+        />
+        <div class="ml-2 p-username">
+          <h5 class="mb-0">{{ story.user?.username || "Guest" }}</h5>
+        </div>
+        <div class="d-flex align-items-center ml-auto">
+          <p class="mb-0 p-date">{{ formatDate(story.created_at) }}</p>
+        </div>
+        <div class="category">
+          <p class="mb-0">{{ story.category?.name || "Uncategorized" }}</p>
         </div>
       </div>
     </div>
   </div>
 </template>
 
-<script>
-export default {
-  props: {
-    imageSrc: {
-      type: String,
-      required: true,
-    },
-    profilePic: {
-      type: String,
-      required: true,
-    },
+<script setup>
+import { defineProps } from "vue";
+import { useRouter } from "vue-router";
+
+const router = useRouter();
+
+defineProps({
+  story: {
+    type: Object,
+    required: true,
   },
+});
+
+const getImageUrl = (url) => {
+  const apiBaseUrl = "https://e016-103-19-231-196.ngrok-free.app";
+  return url ? `${apiBaseUrl}${url}` : "/path/to/default-image.jpg";
+};
+
+const truncateContent = (content) => {
+  if (!content) return "No content available";
+  return content.length > 200 ? content.slice(0, 200) + "..." : content;
+};
+
+const formatDate = (date) => {
+  if (!date) return "N/A";
+  const options = { year: "numeric", month: "long", day: "numeric" };
+  return new Date(date).toLocaleDateString(undefined, options);
+};
+
+const navigateToStory = () => {
+  if (story?.id) {
+    router.push({ path: `/detail`, query: { storyId: story.id } });
+  }
 };
 </script>
 
 <style scoped>
+.p-date {
+  font-size: 14px;
+  white-space: nowrap;
+  margin-left: auto;
+  font-size: 20px;
+}
+
+.p-username {
+  font-size: 20%;
+  margin-left: 10px;
+}
+
 .card-image {
-  border-radius: 15px; /* Mengatur border radius untuk gambar */
-  width: 100%; /* Membuat gambar responsif */
-  height: auto; /* Mempertahankan rasio aspek */
+  border-radius: 15px;
+  min-height: 500px;
+  min-width: 500px;
+  object-fit: cover;
 }
+
+.card-image:hover {
+  opacity: 0.5;
+}
+
+.image-container:hover .bookmark-icon {
+  transform: translateY(-10px); /* Naik ke atas */
+}
+
 .card {
-  border: none; /* Menghilangkan border pada card */
-  width: 1000px; /* Mengatur lebar card */
-  min-height: 700px; /* Atur tinggi minimum sesuai kebutuhan */
-  max-height: 900px; /* Atur tinggi maksimum sesuai kebutuhan */
-  overflow: visible; /* Pastikan konten tidak dapat digulir */
+  border: none;
+  width: 100%;
+  margin: 0 auto;
+  margin-left: 90px;
 }
-.card-title,
-.footer-card {
-  margin: 0; /* Menghilangkan margin */
-  padding: 0; /* Menghilangkan padding */
-}
+
 .card-title {
-  padding-left: 0; /* Menghilangkan padding kiri */
-  padding-right: 0; /* Menghilangkan padding kanan */
+  margin-bottom: 10px;
+  font-size: 18px;
+  font-weight: bold;
 }
+
+.card-text {
+  font-size: 14px;
+  color: #6c757d;
+  line-height: 1.5;
+}
+
 .footer-card {
   display: flex;
-  align-items: center; /* Menyelaraskan elemen secara vertikal */
-  font-size: 16px; /* Ukuran font untuk footer */
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
 }
+
 .profile-pic {
-  width: 40px; /* Lebar gambar profil */
-  height: 40px; /* Tinggi gambar profil */
-  border-radius: 50%; /* Membuat gambar profil menjadi bulat */
-  margin-right: 10px; /* Jarak antara gambar dan nama */
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
 }
+
 .category {
   background-color: #f0f5ed;
   color: #466543;
-  padding: 5px 10px; /* Memberikan padding pada kategori */
-  border-radius: 5px; /* Membulatkan sudut kategori */
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-size: 20px;
+  margin-left: 15px;
 }
+
 .image-container {
-  position: relative; /* Membuat elemen bookmark bisa diposisikan relatif terhadap gambar */
+  position: relative;
 }
 
 .bookmark-icon {
   position: absolute;
-  bottom: 40px; /* Menempatkan bookmark di bagian bawah */
-  right: 30px; /* Menempatkan bookmark di bagian kanan */
+  bottom: 10px;
+  right: 10px;
   background-color: #466543;
-  border-radius: 100%; /* Membuat bentuk bookmark melingkar */
-  padding: 10px; /* Padding untuk memperbesar ikon */
-  cursor: pointer; /* Menambahkan kursor pointer saat hover */
+  border-radius: 50%;
+  padding: 8px;
+  cursor: pointer;
+  transform: translateY(0); /* Posisi awal */
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1); /* Animasi lebih smooth */
 }
 </style>

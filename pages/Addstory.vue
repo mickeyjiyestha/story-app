@@ -83,7 +83,7 @@ onMounted(async () => {
   console.log("Using token:", authStore.token);
   try {
     const response = await axios.get(
-      "https://23bd-103-100-175-121.ngrok-free.app/api/categories",
+      "https://e016-103-19-231-196.ngrok-free.app/api/categories",
       {
         headers: {
           Authorization: `Bearer ${authStore.token}`,
@@ -126,7 +126,7 @@ const uploadStory = async () => {
 
   images.value.forEach((image, index) => {
     const fileName = image.name;
-    const prefixedFileName = `https://23bd-103-100-175-121.ngrok-free.app/storage/images/${fileName}`;
+    const prefixedFileName = `https://e016-103-19-231-196.ngrok-free.app/storage/images/${fileName}`;
     formData.append(`images[${index}]`, image, prefixedFileName);
   });
 
@@ -139,7 +139,7 @@ const uploadStory = async () => {
     });
 
     const response = await axios.post(
-      "https://23bd-103-100-175-121.ngrok-free.app/api/stories",
+      "https://e016-103-19-231-196.ngrok-free.app/api/stories",
       formData,
       {
         headers: {

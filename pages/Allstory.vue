@@ -19,7 +19,7 @@
   </div>
   <WebHeader></WebHeader>
   <div class="hero mt-5 container-fluid">
-    <div class="d-flex story-container">
+    <div class="d-flex story-container justify-content-between">
       <p>Sort By</p>
       <div class="d-flex justify-content-between">
         <div class="dropdown">
@@ -36,8 +36,8 @@
           </ul>
         </div>
 
-        <p>Category</p>
-        <div class="dropdown">
+        <p class="text-category">Category</p>
+        <div class="dropdown-category">
           <div class="dropdown-toggle" @click="toggleCategoryDropdown">
             {{ selectedCategory }}
           </div>
@@ -71,119 +71,13 @@
     </div>
 
     <div class="container-card mt-5">
-      <div class="d-flex">
-        <div class="first-card">
-          <Card
-            :imageSrc="latestImage"
-            :profilePic="mickeyImage"
-            class="card-home"
-          ></Card>
-        </div>
-        <div class="first-card">
-          <Card
-            :imageSrc="latestImage"
-            :profilePic="mickeyImage"
-            class="card-home"
-          ></Card>
-        </div>
-        <div class="first-card">
-          <Card
-            :imageSrc="latestImage"
-            :profilePic="mickeyImage"
-            class="card-home"
-          ></Card>
-        </div>
-      </div>
-      <div class="d-flex">
-        <div class="first-card">
-          <Card
-            :imageSrc="latestImage"
-            :profilePic="mickeyImage"
-            class="card-home"
-          ></Card>
-        </div>
-        <div class="first-card">
-          <Card
-            :imageSrc="latestImage"
-            :profilePic="mickeyImage"
-            class="card-home"
-          ></Card>
-        </div>
-        <div class="first-card">
-          <Card
-            :imageSrc="latestImage"
-            :profilePic="mickeyImage"
-            class="card-home"
-          ></Card>
-        </div>
-      </div>
-      <div class="d-flex">
-        <div class="first-card">
-          <Card
-            :imageSrc="latestImage"
-            :profilePic="mickeyImage"
-            class="card-home"
-          ></Card>
-        </div>
-        <div class="first-card">
-          <Card
-            :imageSrc="latestImage"
-            :profilePic="mickeyImage"
-            class="card-home"
-          ></Card>
-        </div>
-        <div class="first-card">
-          <Card
-            :imageSrc="latestImage"
-            :profilePic="mickeyImage"
-            class="card-home"
-          ></Card>
-        </div>
-      </div>
-      <div class="d-flex">
-        <div class="first-card">
-          <Card
-            :imageSrc="latestImage"
-            :profilePic="mickeyImage"
-            class="card-home"
-          ></Card>
-        </div>
-        <div class="first-card">
-          <Card
-            :imageSrc="latestImage"
-            :profilePic="mickeyImage"
-            class="card-home"
-          ></Card>
-        </div>
-        <div class="first-card">
-          <Card
-            :imageSrc="latestImage"
-            :profilePic="mickeyImage"
-            class="card-home"
-          ></Card>
-        </div>
-      </div>
-      <div class="d-flex">
-        <div class="first-card">
-          <Card
-            :imageSrc="latestImage"
-            :profilePic="mickeyImage"
-            class="card-home"
-          ></Card>
-        </div>
-        <div class="first-card">
-          <Card
-            :imageSrc="latestImage"
-            :profilePic="mickeyImage"
-            class="card-home"
-          ></Card>
-        </div>
-        <div class="first-card">
-          <Card
-            :imageSrc="latestImage"
-            :profilePic="mickeyImage"
-            class="card-home"
-          ></Card>
+      <div class="row container-fluid">
+        <div
+          class="col-md-4 card-container"
+          v-for="story in stories"
+          :key="story.id"
+        >
+          <Card :story="story" class="card-home mb-4"></Card>
         </div>
       </div>
     </div>
@@ -193,12 +87,25 @@
 <script setup lang="ts">
 import latestImage from "@/assets/story-latest.webp";
 import mickeyImage from "@/assets/MICKEY.png";
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
+import { fetchAllStories } from "~/services/apiService";
+import { useAuthStore } from "@/stores/authStore";
 
+// Define the Story interface
+interface Story {
+  id: number;
+  title: string;
+  content: string;
+  category: string;
+  // Add other properties as needed
+}
+
+const authStore = useAuthStore();
 const selectedSort = ref("Newest");
 const selectedCategory = ref("Comedy");
 const isSortDropdownOpen = ref(false);
 const isCategoryDropdownOpen = ref(false);
+const stories = ref<Story[]>([]); // Use the defined type for the stories array
 
 const toggleSortDropdown = () => {
   isSortDropdownOpen.value = !isSortDropdownOpen.value;
@@ -217,15 +124,43 @@ const selectCategory = (category: string) => {
   selectedCategory.value = category;
   isCategoryDropdownOpen.value = false; // Close dropdown after selection
 };
+
+onMounted(async () => {
+  try {
+    const storiesData = await fetchAllStories(); // Call without parameters
+    if (storiesData && Array.isArray(storiesData)) {
+      stories.value = storiesData; // Assign fetched stories to the reactive array
+      console.log("Fetched All Stories:", stories.value);
+    } else {
+      console.error("No stories found in the response.");
+    }
+  } catch (error) {
+    console.error("Error fetching stories:", error);
+  }
+});
 </script>
 
 <style scoped>
-.first-card {
-  margin-left: 50px;
+.text-category {
+  margin-top: 10px;
+  margin-right: 10px;
 }
 
-.card-home {
-  margin-left: 20px;
+.dropdown-category {
+  margin-right: 50px;
+  margin-top: 10px;
+}
+
+.search-container {
+  margin-right: 60px;
+}
+
+.card-container {
+  margin-top: 60px;
+}
+
+.first-card {
+  margin-left: 50px;
 }
 
 .search-box {
@@ -249,19 +184,10 @@ const selectCategory = (category: string) => {
   color: #aaa; /* Warna ikon */
 }
 
-.story-container {
-  padding: 20px;
-}
-
 .dropdown-menu {
   list-style-type: none; /* Menghilangkan bullet points */
   padding: 0; /* Menghilangkan padding */
   margin: 0; /* Menghilangkan margin */
-}
-
-.dropdown-item {
-  padding: 10px; /* Padding untuk item dropdown */
-  cursor: pointer; /* Menunjukkan bahwa item dapat diklik */
 }
 
 .dropdown-item:hover {
@@ -269,8 +195,7 @@ const selectCategory = (category: string) => {
 }
 
 .dropdown {
-  margin-right: 60px;
-  margin-left: 20px;
+  margin-right: 450px;
 }
 
 .hero {

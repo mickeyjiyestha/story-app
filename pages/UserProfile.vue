@@ -58,17 +58,17 @@
       </div>
       <div>
         <div class="card-container" v-if="stories.length > 0">
-          <!-- Loop through stories and pass data to each card component -->
           <div
             v-for="(story, index) in stories"
-            :key="index"
+            :key="story.id"
             class="first-card"
           >
-            <Card
+            <Carduser
               :story="story"
               :imageSrc="story.image"
               :profilePic="story.profilePic"
-            ></Card>
+              @deleteStory="handleDeleteStory"
+            ></Carduser>
           </div>
         </div>
         <div v-else class="containernostories">
@@ -80,6 +80,15 @@
           <img src="@/assets/noStoies.svg" alt="" />
         </div>
       </div>
+    </div>
+
+    <!-- Pagination at the bottom -->
+    <div v-if="hasMoreStories" class="pagination-container">
+      <Pagination
+        :totalPages="totalPages"
+        :currentPage="currentPage"
+        :onPageChange="loadStories"
+      />
     </div>
 
     <!-- Modal for Edit Profile -->
@@ -227,6 +236,9 @@ const newPassword = ref("");
 const confirm_password = ref("");
 
 const stories = ref([]); // Menyimpan data cerita
+const currentPage = ref(1); // Track current page
+const totalPages = ref(1); // Inisialisasi totalPages dengan 1
+const hasMoreStories = ref(true); // Track if there are more stories
 
 const addStory = () => {
   router.push("/addstory");
@@ -344,6 +356,47 @@ const updateProfile = async () => {
   }
 };
 
+const handleDeleteStory = (storyId) => {
+  // Remove the story from the local state after deletion
+  stories.value = stories.value.filter((story) => story.id !== storyId);
+};
+
+const loadStories = async (page) => {
+  const userId = authStore.user?.id; // Ensure user ID is available
+  const config = useRuntimeConfig();
+  const apiBaseUrl = config.public.apiBaseUrl; // Get the public API base URL
+
+  try {
+    // Fetch stories for the specified page
+    const storiesResponse = await fetchUserStories(
+      userId,
+      authStore.token,
+      apiBaseUrl,
+      page // Pass the specified page
+    );
+
+    // Log the response to check if new stories are returned
+    console.log("Fetched Stories Response:", storiesResponse);
+
+    // Check if there are stories returned
+    if (
+      storiesResponse?.data?.stories &&
+      storiesResponse.data.stories.length > 0
+    ) {
+      stories.value = storiesResponse.data.stories; // Update stories with new data
+      totalPages.value = storiesResponse.data.pagination.last_page; // Update total pages based on API response
+      currentPage.value = storiesResponse.data.pagination.current_page; // Update current page based on API response
+    } else {
+      hasMoreStories.value = false; // No more stories to load
+    }
+  } catch (error) {
+    console.error(
+      "Error loading stories:",
+      error?.response?.data || error.message
+    );
+  }
+};
+
 onMounted(async () => {
   authStore.loadToken(); // Pastikan token sudah dimuat
 
@@ -374,23 +427,8 @@ onMounted(async () => {
           console.error("User data not found in response.");
         }
 
-        // Ambil cerita pengguna
-        const storiesResponse = await fetchUserStories(
-          userId,
-          authStore.token,
-          apiBaseUrl
-        );
-        console.log("User Stories:", storiesResponse);
-
-        // Pastikan stories diupdate dengan benar
-        if (storiesResponse?.data?.stories) {
-          // Jika stories adalah array, gunakan langsung
-          stories.value = Array.isArray(storiesResponse.data.stories)
-            ? storiesResponse.data.stories
-            : [];
-        } else {
-          console.error("User stories not found in response.");
-        }
+        // Load stories for page 1 on initial load
+        await loadStories(currentPage.value);
       } catch (error) {
         console.error(
           "Error fetching user data or stories:",
@@ -408,6 +446,13 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+.pagination-container {
+  display: flex;
+  margin-left: 1120px;
+  margin-bottom: 20px;
+  margin-top: 20px; /* Add some space above the pagination */
+}
+
 .nostories-h1 {
   margin-left: 180px;
   font-family: Playfair Display, sans-serif;
@@ -447,7 +492,7 @@ onMounted(async () => {
 .sticky-story {
   position: sticky;
   top: 0;
-  height: 300px;
+  height: 400px;
   overflow: hidden;
   background-color: white;
   border: 1px solid #4b4b4b;
@@ -499,10 +544,6 @@ onMounted(async () => {
   margin-left: 20px;
 }
 
-.first-card {
-  margin-right: 300px;
-}
-
 .card-home {
   margin-right: 50px;
 }
@@ -516,6 +557,7 @@ onMounted(async () => {
   padding: 0 35px;
   margin-bottom: 10px;
   scrollbar-width: none;
+  margin-right: 100px;
 }
 
 .bottom-container {

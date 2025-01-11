@@ -3,28 +3,33 @@
     rel="stylesheet"
     href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
   />
-  <div class="d-flex">
+  <div class="d-flex" v-if="story">
     <div class="card">
       <div class="image-container">
-        <img :src="imageSrc" class="card-img-top card-image" alt="..." />
+        <img
+          :src="getImageUrl(story.images?.[0]?.url || '')"
+          class="card-img-top card-image"
+          alt="Story Image"
+        />
         <bookmark class="bookmark-icon"></bookmark>
         <!-- Bookmark tetap ada -->
       </div>
       <div class="card-body">
-        <h5 class="card-title">Path of Luminous Forest</h5>
-        <p class="card-text">
-          A mystical journey unfolds as a hidden path of glowing light leads to
-          an enchanted castle, revealing secrets of an ancient world.
-        </p>
+        <h5 class="card-title">{{ story.title || "Untitled" }}</h5>
+        <p class="card-text">{{ truncateContent(story.content) }}</p>
         <div class="footer-card">
-          <img :src="profilePic" class="profile-pic" alt="Profile Picture" />
+          <img
+            :src="story.user.avatar || '/path/to/default-avatar.jpg'"
+            class="profile-pic rounded-circle"
+            alt="Profile Picture"
+          />
           <div>
-            <p class="mb-0">Mickey</p>
+            <h5 class="mb-0">{{ story.user.username || "Guest" }}</h5>
           </div>
           <div class="d-flex align-items-center ml-auto">
-            <p class="mb-0 mr-3">17 July 2023</p>
+            <p class="mb-0 p-date">{{ story.created_at }}</p>
             <div class="category">
-              <p class="mb-0">Romance</p>
+              <p class="mb-0">{{ story.category.name }}</p>
             </div>
           </div>
         </div>
@@ -33,18 +38,36 @@
   </div>
 </template>
 
-<script>
-export default {
-  props: {
-    imageSrc: {
-      type: String,
-      required: true,
-    },
-    profilePic: {
-      type: String,
-      required: true,
-    },
+<script setup>
+import { defineProps } from "vue";
+import { useRouter } from "vue-router";
+
+const router = useRouter();
+
+defineProps({
+  story: {
+    type: Object,
+    required: true,
   },
+  user: {
+    type: Object,
+    required: true,
+  },
+});
+
+const getImageUrl = (url) => {
+  const apiBaseUrl = "https://e016-103-19-231-196.ngrok-free.app";
+  return `${apiBaseUrl}${url}`;
+};
+
+const truncateContent = (content) => {
+  if (!content) return "No content available";
+  return content.length > 200 ? content.slice(0, 200) + "..." : content;
+};
+
+const navigateToStory = () => {
+  // Passing dynamic parameters to the route to fetch specific story details
+  router.push({ path: `/detail`, query: { storyId: story.id } });
 };
 </script>
 

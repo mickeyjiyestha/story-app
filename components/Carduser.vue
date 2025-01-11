@@ -4,7 +4,7 @@
     href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
   />
   <div class="d-flex" v-if="story">
-    <div class="card" style="cursor: pointer" @click="navigateToStory">
+    <div class="card mt-3" style="cursor: pointer" @click="navigateToStory">
       <div class="image-container position-relative">
         <img
           :src="getImageUrl(story.images[0].url)"
@@ -12,25 +12,22 @@
           alt="Story Image"
         />
         <bookmark class="bookmark-icon"></bookmark>
+        <delete
+          class="delete-icon"
+          @click.stop="deleteStory(story.id)"
+        ></delete>
+        <Edit class="edit-icon"></Edit>
       </div>
       <div class="card-body">
         <h5 class="card-title">{{ story.title || "Untitled" }}</h5>
         <p class="card-text">{{ truncateContent(story.content) }}</p>
       </div>
       <div class="footer-card d-flex align-items-center">
-        <img
-          :src="story.user.avatar || '/path/to/default-avatar.jpg'"
-          class="profile-pic rounded-circle"
-          alt="Profile Picture"
-        />
-        <div class="ml-2 p-username">
-          <h5 class="mb-0">{{ story.user.username || "Guest" }}</h5>
+        <div class="category">
+          <p class="mb-0">{{ story.category.name }}</p>
         </div>
         <div class="d-flex align-items-center ml-auto">
           <p class="mb-0 p-date">{{ story.created_at }}</p>
-        </div>
-        <div class="category">
-          <p class="mb-0">{{ story.category.name }}</p>
         </div>
       </div>
     </div>
@@ -40,6 +37,8 @@
 <script setup>
 import { defineProps } from "vue";
 import { useRouter } from "vue-router";
+import { useAuthStore } from "@/stores/authStore"; // Adjust the import path
+import axios from "axios";
 
 const router = useRouter();
 
@@ -65,34 +64,51 @@ const truncateContent = (content) => {
 };
 
 const navigateToStory = () => {
-  // Passing dynamic parameters to the route to fetch specific story details
   router.push({ path: `/detail`, query: { storyId: story.id } });
+};
+
+const deleteStory = async (storyId) => {
+  try {
+    const token = useAuthStore().token; // Retrieve the token from the Pinia store
+
+    if (!token) {
+      console.error("No authentication token found.");
+      return; // Exit the function if no token is found
+    }
+
+    // Make the DELETE request to the API
+    const response = await axios.delete(
+      `https://e016-103-19-231-196.ngrok-free.app/api/stories/${storyId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`, // Include the token in the request headers
+        },
+      }
+    );
+
+    console.log("Story deleted:", response.data);
+
+    // Refresh the page after successful deletion
+    location.reload(); // This will refresh the entire page
+  } catch (error) {
+    console.error(
+      "Error deleting story:",
+      error.response ? error.response.data : error.message
+    );
+  }
 };
 </script>
 
 <style scoped>
 .p-date {
-  font-size: 14px;
+  font-size: 20px;
   white-space: nowrap;
   margin-left: auto;
-  font-size: 20px;
 }
 
 .p-username {
-  font-size: 20%;
+  font-size: 16px;
   margin-left: 10px;
-}
-
-.card-image:hover {
-  opacity: 0.5;
-}
-
-.image-container:hover .bookmark-icon {
-  transform: translateY(-10px); /* Naik ke atas */
-}
-
-.card:hover .card-title {
-  color: green;
 }
 
 .card-image {
@@ -106,11 +122,12 @@ const navigateToStory = () => {
   border: none;
   width: 100%;
   margin: 0 auto;
+  margin-left: 90px;
 }
 
 .card-title {
   margin-bottom: 10px;
-  font-size: 25px;
+  font-size: 18px;
   font-weight: bold;
 }
 
@@ -139,7 +156,6 @@ const navigateToStory = () => {
   padding: 5px 10px;
   border-radius: 5px;
   font-size: 20px;
-  margin-left: 15px;
 }
 
 .image-container {
@@ -148,13 +164,37 @@ const navigateToStory = () => {
 
 .bookmark-icon {
   position: absolute;
-  bottom: 30px;
-  right: 20px;
+  bottom: 10px;
+  right: 10px;
   background-color: #466543;
   border-radius: 50%;
   padding: 8px;
+  margin-right: 110px;
+  margin-bottom: 20px;
   cursor: pointer;
-  transform: translateY(0); /* Posisi awal */
-  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1); /* Animasi lebih smooth */
+}
+
+.delete-icon {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  background-color: #466543;
+  border-radius: 50%;
+  padding: 8px;
+  margin-right: 20px;
+  margin-bottom: 20px;
+  cursor: pointer;
+}
+
+.edit-icon {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  background-color: #466543;
+  border-radius: 50%;
+  padding: 8px;
+  margin-right: 200px;
+  margin-bottom: 20px;
+  cursor: pointer;
 }
 </style>
