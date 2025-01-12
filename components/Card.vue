@@ -30,7 +30,7 @@
           <p class="mb-0 p-date">{{ story.created_at }}</p>
         </div>
         <div class="category">
-          <p class="mb-0">{{ story.category.name }}</p>
+          <p class="mb-0">{{ story.category?.name || "Uncategorized" }}</p>
         </div>
       </div>
     </div>
@@ -43,7 +43,7 @@ import { useRouter } from "vue-router";
 
 const router = useRouter();
 
-defineProps({
+const props = defineProps({
   story: {
     type: Object,
     required: true,
@@ -65,8 +65,7 @@ const truncateContent = (content) => {
 };
 
 const navigateToStory = () => {
-  // Passing dynamic parameters to the route to fetch specific story details
-  router.push({ path: `/detail`, query: { storyId: story.id } });
+  router.push({ path: `/detail`, query: { storyId: props.story.id } }); // Navigate to detail page
 };
 </script>
 

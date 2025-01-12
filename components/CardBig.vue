@@ -39,8 +39,12 @@ import { useRouter } from "vue-router";
 
 const router = useRouter();
 
-defineProps({
+const props = defineProps({
   story: {
+    type: Object,
+    required: true,
+  },
+  user: {
     type: Object,
     required: true,
   },
@@ -63,9 +67,7 @@ const formatDate = (date) => {
 };
 
 const navigateToStory = () => {
-  if (story?.id) {
-    router.push({ path: `/detail`, query: { storyId: story.id } });
-  }
+  router.push({ path: `/detail`, query: { storyId: props.story.id } }); // Navigate to detail page
 };
 </script>
 

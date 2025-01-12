@@ -88,6 +88,7 @@
         :totalPages="totalPages"
         :currentPage="currentPage"
         :onPageChange="loadStories"
+        @click="goToDetail(story.id)"
       />
     </div>
 
@@ -239,6 +240,10 @@ const stories = ref([]); // Menyimpan data cerita
 const currentPage = ref(1); // Track current page
 const totalPages = ref(1); // Inisialisasi totalPages dengan 1
 const hasMoreStories = ref(true); // Track if there are more stories
+
+const goToDetail = (id) => {
+  router.push({ name: "Detail", params: { id } }); // Navigate to Detail page with story ID
+};
 
 const addStory = () => {
   router.push("/addstory");

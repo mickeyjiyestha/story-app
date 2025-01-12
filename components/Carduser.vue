@@ -36,13 +36,11 @@
 
 <script setup>
 import { defineProps } from "vue";
-import { useRouter } from "vue-router";
+import { useRouter } from "vue-router"; // Import useRouter
 import { useAuthStore } from "@/stores/authStore"; // Adjust the import path
 import axios from "axios";
 
-const router = useRouter();
-
-defineProps({
+const props = defineProps({
   story: {
     type: Object,
     required: true,
@@ -52,6 +50,8 @@ defineProps({
     required: true,
   },
 });
+
+const router = useRouter(); // Initialize router
 
 const getImageUrl = (url) => {
   const apiBaseUrl = "https://e016-103-19-231-196.ngrok-free.app";
@@ -64,7 +64,7 @@ const truncateContent = (content) => {
 };
 
 const navigateToStory = () => {
-  router.push({ path: `/detail`, query: { storyId: story.id } });
+  router.push({ path: `/detail`, query: { storyId: props.story.id } }); // Navigate to detail page
 };
 
 const deleteStory = async (storyId) => {

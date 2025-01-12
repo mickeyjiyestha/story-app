@@ -4,7 +4,7 @@
     href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
   />
   <div class="d-flex" v-if="story">
-    <div class="card">
+    <div class="card" style="cursor: pointer" @click="navigateToStory">
       <div class="image-container">
         <img
           :src="getImageUrl(story.images?.[0]?.url || '')"
@@ -44,7 +44,7 @@ import { useRouter } from "vue-router";
 
 const router = useRouter();
 
-defineProps({
+const props = defineProps({
   story: {
     type: Object,
     required: true,
@@ -66,8 +66,7 @@ const truncateContent = (content) => {
 };
 
 const navigateToStory = () => {
-  // Passing dynamic parameters to the route to fetch specific story details
-  router.push({ path: `/detail`, query: { storyId: story.id } });
+  router.push({ path: `/detail`, query: { storyId: props.story.id } }); // Navigate to detail page
 };
 </script>
 
