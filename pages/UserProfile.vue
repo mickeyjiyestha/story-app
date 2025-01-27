@@ -41,8 +41,16 @@
     </div>
 
     <div class="d-flex container-menu">
-      <Buttoncategory label="My Story" backgroundColor="#d9f8c4" />
-      <Buttoncategory label="Bookmark" backgroundColor="#f8d9e0" />
+      <Buttoncategory
+        label="My Story"
+        backgroundColor="#d9f8c4"
+        @click="loadUserStories"
+      />
+      <Buttoncategory
+        label="Bookmark"
+        backgroundColor="#f8d9e0"
+        @click="loadBookmarks"
+      />
     </div>
 
     <div class="d-flex mt-5 bottom-container justify-content-between">
@@ -57,9 +65,12 @@
         <Buttonfull :buttonText="'Write Now'" @click="addStory"></Buttonfull>
       </div>
       <div>
-        <div class="card-container" v-if="stories.length > 0">
+        <div
+          class="card-container"
+          v-if="(isBookmarkView ? bookmarks : stories).length > 0"
+        >
           <div
-            v-for="(story, index) in stories"
+            v-for="(story, index) in isBookmarkView ? bookmarks : stories"
             :key="story.id"
             class="first-card"
           >
@@ -213,7 +224,7 @@
 </template>
 
 <script setup>
-import { ref, onBeforeMount } from "vue";
+import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/authStore";
 import axios from "axios";
@@ -221,8 +232,8 @@ import {
   fetchUserData,
   profilePicture,
   fetchUserStories,
+  fetchUserBookmarks, // Import the function to fetch bookmarks
 } from "@/services/apiService";
-import { add } from "@tensorflow/tfjs";
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -236,10 +247,12 @@ const password = ref("");
 const newPassword = ref("");
 const confirm_password = ref("");
 
-const stories = ref([]); // Menyimpan data cerita
+const stories = ref([]); // Store user stories
+const bookmarks = ref([]); // Store user bookmarks
 const currentPage = ref(1); // Track current page
-const totalPages = ref(1); // Inisialisasi totalPages dengan 1
+const totalPages = ref(1); // Initialize totalPages with 1
 const hasMoreStories = ref(true); // Track if there are more stories
+const isBookmarkView = ref(false); // Track if bookmarks are being viewed
 
 const goToDetail = (id) => {
   router.push({ name: "Detail", params: { id } }); // Navigate to Detail page with story ID
@@ -268,7 +281,7 @@ const updateProfilePicture = async (event) => {
       const relativeUrl = response.data.data.url; // Assuming this is the relative path
       const baseUrl = useRuntimeConfig().public.apiBaseUrl; // Access the base URL from Nuxt config
       console.log("Base URL:", baseUrl); // Log the base URL
-      const newAvatarUrl = `${baseUrl}${relativeUrl}`; // Concatenate base URL with the relative path
+      const newAvatarUrl = `${baseUrl}${relativeUrl}`;
       avatar.value = newAvatarUrl;
 
       // Update avatar in store
@@ -353,7 +366,6 @@ const updateProfile = async () => {
 
     closeModal();
   } catch (error) {
-    z;
     console.error(
       "Error updating profile:",
       error.response?.data || error.message
@@ -397,6 +409,32 @@ const loadStories = async (page) => {
   } catch (error) {
     console.error(
       "Error loading stories:",
+      error?.response?.data || error.message
+    );
+  }
+};
+
+// Function to load bookmarks
+const loadBookmarks = async () => {
+  const userId = authStore.user?.id; // Ensure user ID is available
+  const token = authStore.token; // Get the token from the auth store
+  const config = useRuntimeConfig();
+  const apiBaseUrl = config.public.apiBaseUrl; // Get the public API base URL
+
+  try {
+    const response = await fetchUserBookmarks(userId, token); // Fetch bookmarks
+    console.log("Bookmarks Response:", response); // Log the response
+
+    // Check if the response contains the expected structure
+    if (response && response.data && Array.isArray(response.data.stories)) {
+      bookmarks.value = response.data.stories; // Update bookmarks with new data
+      isBookmarkView.value = true; // Set the view to bookmarks
+    } else {
+      console.error("No bookmarks found in response.");
+    }
+  } catch (error) {
+    console.error(
+      "Error loading bookmarks:",
       error?.response?.data || error.message
     );
   }

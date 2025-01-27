@@ -49,7 +49,7 @@ const updateValue = (event) => {
 
 .toolbar {
   display: flex;
-  background-color: #f1f1f1;
+  background-color: white;
   padding: 10px;
 }
 

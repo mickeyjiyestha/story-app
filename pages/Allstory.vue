@@ -16,45 +16,50 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
       rel="stylesheet"
     />
-  </div>
-  <WebHeader></WebHeader>
-  <div class="hero mt-5 container-fluid">
-    <div class="d-flex story-container justify-content-between">
-      <p>Sort By</p>
-      <div class="d-flex justify-content-between">
-        <div class="dropdown">
-          <div class="dropdown-toggle" @click="toggleSortDropdown">
-            {{ selectedSort }}
-          </div>
-          <ul v-if="isSortDropdownOpen" class="dropdown-menu show">
-            <li @click="selectSort('Newest')" class="dropdown-item">Newest</li>
-            <li @click="selectSort('Popular')" class="dropdown-item">
-              Popular
-            </li>
-            <li @click="selectSort('A - Z')" class="dropdown-item">A - Z</li>
-            <li @click="selectSort('Z - A')" class="dropdown-item">Z - A</li>
-          </ul>
-        </div>
+    <WebHeader></WebHeader>
 
-        <p class="text-category">Category</p>
-        <div class="dropdown-category">
-          <div class="dropdown-toggle" @click="toggleCategoryDropdown">
-            {{ selectedCategory }}
+    <div class="hero-bg d-flex p-3">
+      <nuxt-link to="/">
+        <p class="first-hero-child">Home</p>
+      </nuxt-link>
+      <p class="hero-child">/</p>
+      <p class="hero-child">All Story</p>
+    </div>
+    <div class="hero mt-5 container-fluid">
+      <div class="d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center">
+          <p class="p-sort">Sort By</p>
+          <div class="dropdown mx-2">
+            <div class="dropdown-toggle" @click="toggleSortDropdown">
+              {{ selectedSort }}
+            </div>
+            <ul v-if="isSortDropdownOpen" class="dropdown-menu show">
+              <li @click="selectSort('Newest')" class="dropdown-item">
+                Newest
+              </li>
+              <li @click="selectSort('Popular')" class="dropdown-item">
+                Popular
+              </li>
+              <li @click="selectSort('A - Z')" class="dropdown-item">A - Z</li>
+              <li @click="selectSort('Z - A')" class="dropdown-item">Z - A</li>
+            </ul>
           </div>
-          <ul v-if="isCategoryDropdownOpen" class="dropdown-menu show">
-            <li @click="selectCategory('Comedy')" class="dropdown-item">
-              Comedy
-            </li>
-            <li @click="selectCategory('Romance')" class="dropdown-item">
-              Romance
-            </li>
-            <li @click="selectCategory('Horror')" class="dropdown-item">
-              Horror
-            </li>
-            <li @click="selectCategory('Fantasy')" class="dropdown-item">
-              Fantasy
-            </li>
-          </ul>
+          <p class="p-sort-c">Category</p>
+          <div class="dropdown-category mx-2">
+            <div class="dropdown-toggle" @click="toggleCategoryDropdown">
+              {{ selectedCategory }}
+            </div>
+            <ul v-if="isCategoryDropdownOpen" class="dropdown-menu show">
+              <li
+                v-for="category in categories"
+                :key="category.id"
+                @click="selectCategory(category.name)"
+                class="dropdown-item"
+              >
+                {{ category.name }}
+              </li>
+            </ul>
+          </div>
         </div>
 
         <div class="search-container">
@@ -63,49 +68,106 @@
               type="text"
               class="search-input"
               placeholder="Search Story"
+              v-model="searchKeyword"
             />
             <i class="fas fa-search search-icon"></i>
           </div>
         </div>
       </div>
-    </div>
 
-    <div class="container-card mt-5">
-      <div class="row container-fluid">
-        <div
-          class="col-md-4 card-container"
-          v-for="story in stories"
-          :key="story.id"
-        >
-          <Card :story="story" class="card-home mb-4"></Card>
+      <div class="container-card mt-5">
+        <div class="row container-fluid mt-5">
+          <div
+            class="col-md-4 card-container mt-5"
+            v-for="story in paginatedStories"
+            :key="story.id"
+          >
+            <Card :story="story" class="card-home mb-4"></Card>
+          </div>
         </div>
+      </div>
+
+      <!-- Pagination at the bottom -->
+      <div v-if="totalPages > 0" class="pagination-container mt-4">
+        <Pagination
+          :totalPages="totalPages"
+          :currentPage="currentPage"
+          :onPageChange="changePage"
+        />
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import latestImage from "@/assets/story-latest.webp";
-import mickeyImage from "@/assets/MICKEY.png";
-import { ref, onMounted } from "vue";
-import { fetchAllStories } from "~/services/apiService";
-import { useAuthStore } from "@/stores/authStore";
+import { ref, onMounted, computed } from "vue";
+import {
+  fetchAllStories,
+  fetchStoriesByLatest,
+  fetchSortedStories,
+  fetchCategories, // Import the new function
+  fetchStoriesByCategoryId,
+} from "~/services/apiService"; // Ensure you have this function
+import { useAuthStore } from "@/stores/authStore"; // Import the auth store
+import { useRoute } from "vue-router";
+import Pagination from "@/components/Pagination.vue";
 
-// Define the Story interface
 interface Story {
   id: number;
   title: string;
   content: string;
   category: string;
-  // Add other properties as needed
 }
 
-const authStore = useAuthStore();
+interface Category {
+  id: number; // Adjust the type based on your API response
+  name: string; // Adjust the type based on your API response
+}
+
+const route = useRoute();
+const authStore = useAuthStore(); // Use the auth store
 const selectedSort = ref("Newest");
-const selectedCategory = ref("Comedy");
+const selectedCategory = ref("Select Category"); // Default value for the category dropdown
 const isSortDropdownOpen = ref(false);
 const isCategoryDropdownOpen = ref(false);
-const stories = ref<Story[]>([]); // Use the defined type for the stories array
+const allStories = ref<Story[]>([]);
+const categories = ref<Category[]>([]); // Specify the type for categories
+const searchKeyword = ref<string>(
+  Array.isArray(route.query.keyword)
+    ? route.query.keyword[0] || ""
+    : route.query.keyword || ""
+);
+
+const currentPage = ref(1);
+const itemsPerPage = 9;
+
+// Filter stories based on the search keyword
+const filteredStories = computed(() => {
+  const keyword = (searchKeyword.value ?? "").toLowerCase();
+  if (!keyword) return allStories.value; // Return all stories if no keyword
+
+  return allStories.value.filter((story) => {
+    return (
+      story.title.toLowerCase().includes(keyword) ||
+      story.content.toLowerCase().includes(keyword)
+    );
+  });
+});
+
+// Pagination logic
+const totalPages = computed(() => {
+  return Math.ceil(filteredStories.value.length / itemsPerPage);
+});
+
+const paginatedStories = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage;
+  const end = start + itemsPerPage;
+  return filteredStories.value.slice(start, end);
+});
+
+const changePage = (page: number) => {
+  currentPage.value = page;
+};
 
 const toggleSortDropdown = () => {
   isSortDropdownOpen.value = !isSortDropdownOpen.value;
@@ -115,93 +177,182 @@ const toggleCategoryDropdown = () => {
   isCategoryDropdownOpen.value = !isCategoryDropdownOpen.value;
 };
 
-const selectSort = (sortOption: string) => {
+const selectSort = async (sortOption: string) => {
   selectedSort.value = sortOption;
-  isSortDropdownOpen.value = false; // Close dropdown after selection
+  isSortDropdownOpen.value = false;
+
+  if (sortOption === "Newest") {
+    try {
+      console.log("Fetching latest stories..."); // Debugging log
+      const latestStories = await fetchStoriesByLatest(); // Call the API for latest stories
+      console.log("Latest Stories:", latestStories); // Debugging log
+      allStories.value = latestStories; // Update allStories with latest data
+      currentPage.value = 1; // Reset to the first page after fetching
+    } catch (error) {
+      console.error("Error fetching latest stories:", error);
+    }
+  } else if (sortOption === "A - Z") {
+    try {
+      console.log("Fetching sorted stories A-Z...");
+      const sortedStories = await fetchSortedStories("asc");
+      console.log("Sorted Stories:", sortedStories);
+      allStories.value = sortedStories;
+      currentPage.value = 1;
+    } catch (error) {
+      console.error("Error fetching sorted stories:", error);
+    }
+  } else if (sortOption === "Z - A") {
+    try {
+      console.log("Fetching sorted stories Z-A...");
+      const sortedStories = await fetchSortedStories("desc");
+      console.log("Sorted Stories:", sortedStories);
+      allStories.value = sortedStories;
+      currentPage.value = 1;
+    } catch (error) {
+      console.error("Error fetching sorted stories:", error);
+    }
+  } else {
+    // Handle other sort options (e.g., Popular) if needed
+  }
 };
 
-const selectCategory = (category: string) => {
-  selectedCategory.value = category;
-  isCategoryDropdownOpen.value = false; // Close dropdown after selection
+const selectCategory = async (category: string) => {
+  selectedCategory.value = category; // Set the selected category
+  isCategoryDropdownOpen.value = false; // Close the dropdown
+
+  const categoryId = categories.value.find((cat) => cat.name === category)?.id; // Get the category ID
+
+  if (categoryId) {
+    try {
+      const stories = await fetchStoriesByCategoryId(
+        categoryId,
+        authStore.token
+      ); // Ensure this matches the function definition
+      allStories.value = stories; // Update allStories with fetched stories
+      currentPage.value = 1; // Reset to the first page after fetching
+    } catch (error) {
+      console.error("Error fetching stories by category:", error);
+    }
+  } else {
+    console.error("Category ID not found.");
+  }
 };
 
+// Fetch all stories and categories on mount
 onMounted(async () => {
   try {
-    const storiesData = await fetchAllStories(); // Call without parameters
+    const storiesData = await fetchAllStories();
     if (storiesData && Array.isArray(storiesData)) {
-      stories.value = storiesData; // Assign fetched stories to the reactive array
-      console.log("Fetched All Stories:", stories.value);
+      allStories.value = storiesData; // Ensure this is set correctly
     } else {
       console.error("No stories found in the response.");
     }
+
+    // Retrieve the token from the auth store
+    const token = authStore.token; // Get the token from the auth store
+    if (!token) {
+      console.error("No token found. Please log in again.");
+      return; // Exit if no token is found
+    }
+
+    // Fetch categories
+    const categoriesData = await fetchCategories(token); // Fetch categories with the token
+    categories.value = categoriesData; // Set categories
   } catch (error) {
-    console.error("Error fetching stories:", error);
+    console.error("Error fetching stories or categories:", error);
   }
 });
 </script>
 
 <style scoped>
-.text-category {
-  margin-top: 10px;
-  margin-right: 10px;
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
 }
 
-.dropdown-category {
-  margin-right: 50px;
-  margin-top: 10px;
+.p-sort,
+.p-sort-c {
+  margin: 0 10px; /* Adjust margin for better spacing */
+}
+
+.hero-bg {
+  background-color: #f0f5ed;
+}
+
+.hero-child {
+  margin-left: 30px;
+  font-size: 20px;
+}
+
+.dropdown-category,
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-menu.show {
+  display: block;
+}
+
+.dropdown-toggle {
+  cursor: pointer;
+  padding: 10px;
+  border-radius: 5px;
+}
+
+.first-hero-child {
+  margin-left: 50px;
+  font-size: 20px;
+  text-decoration: none;
+  color: black;
 }
 
 .search-container {
-  margin-right: 60px;
-}
-
-.card-container {
-  margin-top: 60px;
-}
-
-.first-card {
-  margin-left: 50px;
+  margin-left: auto; /* Push search container to the right */
 }
 
 .search-box {
   position: relative;
   width: 100%;
-  max-width: 600px;
+  max-width: 300px; /* Adjust max-width for search box */
 }
 
 .search-input {
   width: 100%;
-  padding: 10px 40px 10px 20px; /* Padding untuk input */
-  border: 1px solid #ccc; /* Border untuk input */
-  border-radius: 5px; /* Sudut membulat */
+  padding: 10px 40px 10px 20px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
 }
 
 .search-icon {
   position: absolute;
-  left: 10px; /* Posisi ikon di dalam input */
+  left: 10px;
   top: 50%;
-  transform: translateY(-50%); /* Pusatkan ikon secara vertikal */
-  color: #aaa; /* Warna ikon */
+  transform: translateY(-50%);
+  color: #aaa;
 }
 
 .dropdown-menu {
-  list-style-type: none; /* Menghilangkan bullet points */
-  padding: 0; /* Menghilangkan padding */
-  margin: 0; /* Menghilangkan margin */
+  position: absolute;
+  background-color: white;
+  border: 1px solid #ccc;
+  z-index: 1000;
+  display: none;
 }
 
 .dropdown-item:hover {
-  background-color: #e0e0e0; /* Warna latar belakang saat hover */
+  background-color: #e0e0e0;
 }
 
-.dropdown {
-  margin-right: 450px;
+.dropdown-item {
+  padding: 10px;
+  cursor: pointer;
 }
 
 .hero {
   font-family: Dm Sans, sans-serif;
-  margin-left: 25px;
-  margin-right: 25px;
+  margin: 25px;
   font-size: 25px;
 }
 </style>

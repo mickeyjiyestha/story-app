@@ -16,7 +16,10 @@
           class="delete-icon"
           @click.stop="deleteStory(story.id)"
         ></delete>
-        <Edit class="edit-icon"></Edit>
+        <Edit
+          class="edit-icon"
+          @click.stop="navigateToEditStory(story.id)"
+        ></Edit>
       </div>
       <div class="card-body">
         <h5 class="card-title">{{ story.title || "Untitled" }}</h5>
@@ -54,7 +57,7 @@ const props = defineProps({
 const router = useRouter(); // Initialize router
 
 const getImageUrl = (url) => {
-  const apiBaseUrl = "https://e016-103-19-231-196.ngrok-free.app";
+  const apiBaseUrl = "https://52fb-103-19-231-239.ngrok-free.app";
   return `${apiBaseUrl}${url}`;
 };
 
@@ -65,6 +68,10 @@ const truncateContent = (content) => {
 
 const navigateToStory = () => {
   router.push({ path: `/detail`, query: { storyId: props.story.id } }); // Navigate to detail page
+};
+
+const navigateToEditStory = (storyId) => {
+  router.push({ path: `/addstory`, query: { storyId } }); // Arahkan ke halaman AddStory
 };
 
 const deleteStory = async (storyId) => {
@@ -78,7 +85,7 @@ const deleteStory = async (storyId) => {
 
     // Make the DELETE request to the API
     const response = await axios.delete(
-      `https://e016-103-19-231-196.ngrok-free.app/api/stories/${storyId}`,
+      `https://52fb-103-19-231-239.ngrok-free.app/api/stories/${storyId}`,
       {
         headers: {
           Authorization: `Bearer ${token}`, // Include the token in the request headers

@@ -38,13 +38,17 @@ const updateValue = (event) => {
 <style scoped>
 .input-container {
   width: 100%;
-  max-width: 600px;
+  max-width: 600px; /* Maximum width for larger screens */
+  margin: 0 auto; /* Center the container */
+  display: flex; /* Use flexbox for centering */
+  justify-content: center; /* Center horizontally */
 }
 
 .input-field {
   width: 100%;
-  min-width: 680px;
-  min-height: 70px;
+  min-width: 300px; /* Minimum width for mobile devices */
+  max-width: 680px; /* Maximum width for desktop */
+  min-height: 50px; /* Adjusted minimum height for better mobile appearance */
   padding: 12px;
   font-size: 16px;
   border: 2px solid #ccc;

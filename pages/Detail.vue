@@ -1,17 +1,19 @@
 <template>
   <WebHeader />
   <div class="hero d-flex p-3">
-    <p class="first-hero-child">Home</p>
+    <nuxt-link to="/">
+      <p class="first-hero-child">Home</p>
+    </nuxt-link>
     <p class="hero-child">/</p>
     <p class="hero-child">{{ story?.title || "Untitled" }}</p>
   </div>
   <div class="detail-container">
     <div class="story-header">
-      <div class="d-flex container-bookmark">
-        <p class="date date-content">
-          {{ story?.created_at || "Date not available" }}
-        </p>
-        <bookmark class="bookmark-icon"></bookmark>
+      <div class="container-bookmark">
+        <p class="date">{{ story?.created_at || "Date not available" }}</p>
+        <div class="bookmark-icon">
+          <bookmark></bookmark>
+        </div>
       </div>
       <h1 class="story-title">{{ story?.title || "Untitled" }}</h1>
       <div class="author">
@@ -48,7 +50,7 @@
     </div>
 
     <div class="similar-stories">
-      <div class="d-flex justify-content-between">
+      <div class="similar-header">
         <h1 class="text-comedy">Similar Story</h1>
       </div>
       <div class="latest-container">
@@ -77,25 +79,35 @@
         alt="Story Image"
         class="modal-image"
       />
-      <button @click="prevImage" :disabled="currentImageIndex === 0">
-        ❮ Prev
-      </button>
-      <button
-        @click="nextImage"
-        :disabled="currentImageIndex === story.images.length - 1"
-      >
-        Next ❯
-      </button>
-    </div>
-    <hr />
-    <div class="d-flex p-3 justify-content-between">
-      <p class="ml-5">PT. Timedoor Indonesia. All right reserved</p>
-      <div class="logo-container">
-        <img src="@/assets/fb.png" class="mr-3" alt="" />
-        <img src="@/assets/yt.png" class="mr-3" alt="" />
-        <img src="@/assets/ig.png" class="mr-3" alt="" />
+      <div class="modal-controls">
+        <button
+          class="nav-button prev"
+          @click="prevImage"
+          :disabled="currentImageIndex === 0"
+        >
+          ❮
+        </button>
+        <button
+          class="nav-button next"
+          @click="nextImage"
+          :disabled="currentImageIndex === story.images.length - 1"
+        >
+          ❯
+        </button>
       </div>
     </div>
+
+    <footer class="footer">
+      <hr />
+      <div class="footer-content">
+        <p>PT. Timedoor Indonesia. All right reserved</p>
+        <div class="social-icons">
+          <img src="@/assets/fb.png" alt="Facebook" />
+          <img src="@/assets/yt.png" alt="YouTube" />
+          <img src="@/assets/ig.png" alt="Instagram" />
+        </div>
+      </div>
+    </footer>
   </div>
 </template>
 
@@ -113,13 +125,35 @@ const similarStories = ref([]); // Initialize similar stories
 const currentImageIndex = ref(0); // State untuk menyimpan indeks gambar saat ini
 const showImageModal = ref(false); // State untuk menampilkan modal gambar
 
+const openImageModal = (index) => {
+  currentImageIndex.value = index; // Pastikan ini benar
+  showImageModal.value = true; // Tampilkan modal
+};
+
+const toggleImageModal = () => {
+  currentImageIndex.value = 0; // Set index ke 0 untuk gambar utama
+  showImageModal.value = true; // Tampilkan modal
+};
+
+const nextImage = () => {
+  if (currentImageIndex.value < story.value.images.length - 1) {
+    currentImageIndex.value++;
+  }
+};
+
+const prevImage = () => {
+  if (currentImageIndex.value > 0) {
+    currentImageIndex.value--;
+  }
+};
+
 const getImageUrl = (url) => {
-  const apiBaseUrl = "https://e016-103-19-231-196.ngrok-free.app"; // Base URL API
+  const apiBaseUrl = "https://52fb-103-19-231-239.ngrok-free.app"; // Base URL API
   return `${apiBaseUrl}${url}`;
 };
 
 const fetchStoryDetail = async (id) => {
-  const apiBaseUrl = "https://e016-103-19-231-196.ngrok-free.app"; // Base URL API
+  const apiBaseUrl = "https://52fb-103-19-231-239.ngrok-free.app"; // Base URL API
 
   try {
     const response = await axios.get(
@@ -180,26 +214,16 @@ watch(
 </script>
 
 <style scoped>
+/* Desktop Styles */
 .custom-hr {
   width: 90%;
   margin: 20px auto;
   border: 1px solid #ccc;
 }
 
-.bookmark-icon {
-  position: absolute;
-  margin-left: 1750px;
-  background-color: #466543;
-  border-radius: 50%;
-  padding: 8px;
-  cursor: pointer;
-  transform: translateY(0); /* Posisi awal */
-  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1); /* Animasi lebih smooth */
-  margin-top: 30px;
-}
-
 .hero {
   background-color: #f0f5ed;
+  padding: 15px 50px;
 }
 
 .hero-child {
@@ -207,100 +231,103 @@ watch(
   font-size: 20px;
 }
 
-.container-bookmark p {
-  margin-left: 850px;
-}
-
-.text-comedy {
-  font-family: Playfair Display, sans-serif;
-  font-weight: 500;
-  font-size: 45px;
-  text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
-  margin-bottom: 40px;
-  margin-top: 70px;
-  margin-left: 100px;
-}
-
 .first-hero-child {
-  margin-left: 5%;
   font-size: 20px;
+  text-decoration: none;
+  color: black;
+}
+
+.first-hero-child:hover {
+  color: #466543;
 }
 
 .detail-container {
+  max-width: 1440px;
+  margin: 0 auto;
   padding: 20px;
-  margin: auto;
 }
 
 .story-header {
   text-align: center;
+  margin-bottom: 40px;
+}
+
+.container-bookmark {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
   margin-bottom: 20px;
 }
 
+.bookmark-icon {
+  position: absolute;
+  right: 20px;
+  background-color: #466543;
+  border-radius: 50%;
+  padding: 8px;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.bookmark-icon:hover {
+  transform: translateY(-5px);
+}
+
 .story-title {
-  font-size: 70px;
-  margin: 0;
-  font-family: Playfair Display, serif;
-  margin-bottom: 50px;
+  font-size: 48px;
+  font-family: "Playfair Display", serif;
+  margin-bottom: 30px;
 }
 
 .date {
-  font-size: 23px;
-  margin-top: 27px;
-  margin-bottom: 40px;
+  font-size: 18px;
+  color: #666;
 }
 
 .author {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-top: 20px;
-  margin-bottom: 40px;
-  font-size: 20px;
-}
-
-.author p {
-  margin-bottom: 25px;
+  gap: 10px;
+  font-size: 18px;
 }
 
 .avatar {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  margin-right: 10px;
-  margin-bottom: 20px;
+  object-fit: cover;
 }
 
 .story-content-container {
-  display: flex; /* Menggunakan Flexbox untuk mengatur gambar dan konten */
-  align-items: flex-start; /* Menjaga gambar dan konten sejajar di bagian atas */
-  margin-left: 100px; /* Jarak dari kiri untuk keseluruhan konten */
+  display: flex;
+  gap: 40px;
+  margin-bottom: 40px;
 }
 
 .main-image-container {
+  flex: 0 0 50%;
   cursor: pointer;
-  margin-right: 20px; /* Jarak antara gambar utama dan konten */
 }
 
 .main-image {
-  width: 600px; /* Atur lebar gambar utama */
-  height: auto;
-  border-radius: 15px; /* Ubah nilai ini untuk mengatur kelengkungan sudut */
+  width: 100%;
+  border-radius: 15px;
+  object-fit: cover;
 }
 
 .story-content {
-  flex: 1; /* Konten mengambil sisa ruang yang tersedia */
+  flex: 1;
   font-size: 16px;
-  line-height: 1.5;
-  margin-left: 40px;
-  margin-right: 50px;
+  line-height: 1.8;
 }
 
 .image-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(177px, 1fr));
-  gap: 10px; /* Jarak antara gambar */
-  margin-top: 20px; /* Jarak antara gambar utama dan gambar lainnya */
-  margin-left: 110px;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
+  margin: 40px 0;
 }
 
 .image-item {
@@ -309,38 +336,40 @@ watch(
 
 .image-item img {
   width: 100%;
-  height: auto;
-  border-radius: 10px; /* Sudut melengkung */
+  height: 200px;
+  object-fit: cover;
+  border-radius: 10px;
+  transition: opacity 0.3s ease;
+}
+
+.image-item img:hover {
+  opacity: 0.8;
 }
 
 .similar-stories {
-  margin-top: 40px; /* Jarak antara detail cerita dan cerita yang mirip */
+  margin: 60px 0;
+}
+
+.text-comedy {
+  font-family: "Playfair Display", serif;
+  font-size: 36px;
+  margin-bottom: 20px;
 }
 
 .card-container {
-  display: flex;
-  margin-right: 10px;
-  overflow-x: auto;
-  overflow-y: hidden;
-  padding: 0 35px;
-  margin-bottom: 10px;
-  scrollbar-width: none;
-  margin-right: 100px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 30px;
+  padding: 20px 0;
 }
 
-.first-card {
-  margin-bottom: 100px;
-  margin-left: 60px; /* Jarak antara kartu cerita */
-}
-
-/* Gaya untuk modal gambar */
 .image-modal {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.8);
+  background-color: rgba(0, 0, 0, 0.9);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -349,7 +378,35 @@ watch(
 
 .modal-image {
   max-width: 90%;
-  max-height: 90%;
+  max-height: 90vh;
+  object-fit: contain;
+}
+
+.modal-controls {
+  position: absolute;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 20px;
+}
+
+.nav-button {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  padding: 15px 25px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.nav-button:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.nav-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .close {
@@ -357,7 +414,143 @@ watch(
   top: 20px;
   right: 30px;
   color: white;
-  font-size: 30px;
+  font-size: 40px;
   cursor: pointer;
+  z-index: 1001;
+}
+
+.footer {
+  margin-top: 60px;
+}
+
+.footer-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 0;
+}
+
+.social-icons {
+  display: flex;
+  gap: 20px;
+}
+
+.social-icons img {
+  width: 24px;
+  height: 24px;
+}
+
+/* Media Queries untuk Mobile */
+@media screen and (max-width: 768px) {
+  .hero {
+    padding: 10px 20px;
+  }
+
+  .hero-child {
+    margin-left: 15px;
+    font-size: 16px;
+  }
+
+  .story-title {
+    font-size: 32px;
+    padding: 0 20px;
+  }
+
+  .date {
+    font-size: 16px;
+  }
+
+  .story-content-container {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .main-image-container {
+    flex: none;
+  }
+
+  .main-image {
+    height: 300px;
+  }
+
+  .story-content {
+    padding: 0 20px;
+    font-size: 15px;
+  }
+
+  .image-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 15px;
+    padding: 0 20px;
+  }
+
+  .image-item img {
+    height: 150px;
+  }
+
+  .text-comedy {
+    font-size: 28px;
+    padding: 0 20px;
+  }
+
+  .card-container {
+    grid-template-columns: 1fr;
+    padding: 20px;
+  }
+
+  .nav-button {
+    padding: 10px 20px;
+  }
+
+  .footer-content {
+    flex-direction: column;
+    gap: 20px;
+    text-align: center;
+  }
+}
+
+/* Untuk layar yang sangat kecil */
+@media screen and (max-width: 480px) {
+  .story-title {
+    font-size: 24px;
+  }
+
+  .date {
+    font-size: 14px;
+  }
+
+  .author {
+    font-size: 14px;
+  }
+
+  .avatar {
+    width: 32px;
+    height: 32px;
+  }
+
+  .main-image {
+    height: 250px;
+  }
+
+  .story-content {
+    font-size: 14px;
+  }
+
+  .image-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 10px;
+  }
+
+  .image-item img {
+    height: 120px;
+  }
+
+  .text-comedy {
+    font-size: 24px;
+  }
+
+  .nav-button {
+    padding: 8px 16px;
+  }
 }
 </style>

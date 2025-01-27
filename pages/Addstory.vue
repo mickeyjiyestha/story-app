@@ -4,8 +4,8 @@
   <div>
     <div class="d-flex">
       <nuxt-link to="/userprofile">
-        <i class="fa-solid fa-arrow-left arrow-left"></i
-      ></nuxt-link>
+        <i class="fa-solid fa-arrow-left arrow-left"></i>
+      </nuxt-link>
 
       <div class="container-header">
         <h1 class="text-header">Write Story</h1>
@@ -47,6 +47,19 @@
     <div class="container-upload container-feild">
       <label for="image">Additional Image</label>
       <Uploadimage v-model="images"></Uploadimage>
+      <div v-if="isEditMode && images.length">
+        <h3>Uploaded Images:</h3>
+        <div
+          v-for="(image, index) in images"
+          :key="index"
+          class="image-container"
+        >
+          <img :src="image.name" alt="Uploaded Image" class="uploaded-image" />
+          <button @click="removeImage(index)" class="remove-button">
+            Remove
+          </button>
+        </div>
+      </div>
     </div>
     <div class="d-flex mt-5 container-button">
       <div class="container-cancel">
@@ -54,7 +67,7 @@
       </div>
       <div>
         <Buttonfull
-          :buttonText="'Upload Story'"
+          :buttonText="isEditMode ? 'Update Story' : 'Upload Story'"
           @click="uploadStory"
         ></Buttonfull>
       </div>
@@ -67,23 +80,23 @@ import { ref, onMounted } from "vue";
 import axios from "axios";
 import { useAuthStore } from "@/stores/authStore";
 import { useRouter } from "vue-router";
-import { routerKey } from "vue-router";
 
 const router = useRouter();
-
 const authStore = useAuthStore();
 const categories = ref([]);
 const selectedCategory = ref(null);
 const dropdownVisible = ref(false);
 const title = ref("");
 const content = ref("");
-const images = ref("");
+const images = ref([]);
+const isEditMode = ref(false);
+const storyId = ref(null);
 
 onMounted(async () => {
   console.log("Using token:", authStore.token);
   try {
     const response = await axios.get(
-      "https://e016-103-19-231-196.ngrok-free.app/api/categories",
+      "https://52fb-103-19-231-239.ngrok-free.app/api/categories",
       {
         headers: {
           Authorization: `Bearer ${authStore.token}`,
@@ -95,6 +108,44 @@ onMounted(async () => {
     categories.value = response.data.categories;
   } catch (error) {
     console.error("Error fetching categories:", error);
+  }
+
+  const storyIdFromRoute = router.currentRoute.value.query.storyId;
+  if (storyIdFromRoute) {
+    isEditMode.value = true;
+    storyId.value = storyIdFromRoute;
+    try {
+      const response = await axios.get(
+        `https://52fb-103-19-231-239.ngrok-free.app/api/stories/${storyIdFromRoute}`,
+        {
+          headers: {
+            "ngrok-skip-browser-warning": "69420",
+            Authorization: `Bearer ${authStore.token}`,
+          },
+        }
+      );
+
+      console.log("Story response:", response.data);
+      const story = response.data.data.stories;
+      title.value = story.title || "";
+      content.value = story.content || "";
+      selectedCategory.value = story.category || null;
+
+      // Menampilkan gambar yang sudah ada
+      images.value = story.images
+        ? story.images.map((image) => ({
+            name: image.url
+              ? `https://52fb-103-19-231-239.ngrok-free.app${image.url}`
+              : "",
+          }))
+        : [];
+    } catch (error) {
+      console.error(
+        "Error fetching story details:",
+        error.response?.data || error.message
+      );
+      alert("Failed to load story details.");
+    }
   }
 });
 
@@ -124,30 +175,28 @@ const uploadStory = async () => {
   formData.append("content", content.value);
   formData.append("category_id", selectedCategory.value.id);
 
-  images.value.forEach((image, index) => {
-    const fileName = image.name;
-    const prefixedFileName = `https://e016-103-19-231-196.ngrok-free.app/storage/images/${fileName}`;
-    formData.append(`images[${index}]`, image, prefixedFileName);
+  // Hanya tambahkan gambar yang valid
+  images.value.forEach((image) => {
+    if (image instanceof File) {
+      formData.append("images[]", image);
+    }
   });
 
-  try {
-    console.log("Uploading story with data:", {
-      title: title.value,
-      content: content.value,
-      images: images.value.map((img) => img.name),
-      categoryId: selectedCategory.value.id,
-    });
+  if (isEditMode.value) {
+    formData.append("_method", "PUT");
+  }
 
-    const response = await axios.post(
-      "https://e016-103-19-231-196.ngrok-free.app/api/stories",
-      formData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-          Authorization: `Bearer ${authStore.token}`,
-        },
-      }
-    );
+  try {
+    const url = isEditMode.value
+      ? `https://52fb-103-19-231-239.ngrok-free.app/api/stories/${storyId.value}`
+      : "https://52fb-103-19-231-239.ngrok-free.app/api/stories";
+
+    const response = await axios.post(url, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+        Authorization: `Bearer ${authStore.token}`,
+      },
+    });
     console.log("Story uploaded successfully:", response.data);
     router.push("/userprofile");
   } catch (error) {
@@ -166,6 +215,11 @@ const uploadStory = async () => {
       alert(`Failed to upload story: ${error.message}`);
     }
   }
+};
+
+// Fungsi untuk menghapus gambar
+const removeImage = (index) => {
+  images.value.splice(index, 1);
 };
 </script>
 
@@ -206,6 +260,26 @@ const uploadStory = async () => {
   list-style-type: none; /* Menghilangkan bullet points */
   padding: 0; /* Menghilangkan padding */
   margin: 0; /* Menghilangkan margin */
+}
+
+.uploaded-image {
+  max-width: 600px; /* Ubah ukuran sesuai kebutuhan */
+  margin-right: 10px;
+}
+
+.image-container {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.remove-button {
+  margin-left: 10px;
+  background-color: red;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer;
 }
 
 .dropdown-item {

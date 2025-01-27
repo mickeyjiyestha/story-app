@@ -7,23 +7,25 @@
           class="card-img-top card-image"
           alt="Story Image"
         />
-        <bookmark class="bookmark-icon"></bookmark>
+        <div class="bookmark-icon" @click.stop="handleBookmark">
+          <bookmark></bookmark>
+        </div>
       </div>
       <div class="card-body">
         <h5 class="card-title">{{ story.title || "Untitled" }}</h5>
         <p class="card-text">{{ truncateContent(story.content) }}</p>
       </div>
-      <div class="footer-card d-flex align-items-center">
-        <img
-          :src="story.user?.avatar || '/path/to/default-avatar.jpg'"
-          class="profile-pic rounded-circle"
-          alt="Profile Picture"
-        />
-        <div class="ml-2 p-username">
-          <h5 class="mb-0">{{ story.user?.username || "Guest" }}</h5>
-        </div>
-        <div class="d-flex align-items-center ml-auto">
-          <p class="mb-0 p-date">{{ formatDate(story.created_at) }}</p>
+      <div class="footer-card">
+        <div class="user-info">
+          <img
+            :src="story.user?.avatar || '/path/to/default-avatar.jpg'"
+            class="profile-pic rounded-circle"
+            alt="Profile Picture"
+          />
+          <div class="user-details">
+            <h5 class="mb-0 username">{{ story.user?.username || "Guest" }}</h5>
+            <p class="mb-0 date">{{ formatDate(story.created_at) }}</p>
+          </div>
         </div>
         <div class="category">
           <p class="mb-0">{{ story.category?.name || "Uncategorized" }}</p>
@@ -36,8 +38,10 @@
 <script setup>
 import { defineProps } from "vue";
 import { useRouter } from "vue-router";
+import { useAuthStore } from "@/stores/authStore";
 
 const router = useRouter();
+const authStore = useAuthStore();
 
 const props = defineProps({
   story: {
@@ -51,13 +55,16 @@ const props = defineProps({
 });
 
 const getImageUrl = (url) => {
-  const apiBaseUrl = "https://e016-103-19-231-196.ngrok-free.app";
+  const apiBaseUrl = "https://52fb-103-19-231-239.ngrok-free.app";
   return url ? `${apiBaseUrl}${url}` : "/path/to/default-image.jpg";
 };
 
 const truncateContent = (content) => {
   if (!content) return "No content available";
-  return content.length > 200 ? content.slice(0, 200) + "..." : content;
+  if (window.innerWidth <= 768) {
+    return content.length > 150 ? content.slice(0, 150) + "..." : content;
+  }
+  return content.length > 300 ? content.slice(0, 300) + "..." : content;
 };
 
 const formatDate = (date) => {
@@ -67,77 +74,130 @@ const formatDate = (date) => {
 };
 
 const navigateToStory = () => {
-  router.push({ path: `/detail`, query: { storyId: props.story.id } }); // Navigate to detail page
+  router.push({ path: `/detail`, query: { storyId: props.story.id } });
+};
+
+const handleBookmark = async () => {
+  const apiBaseUrl = "https://52fb-103-19-231-239.ngrok-free.app";
+  const token = authStore.token;
+  const storyId = props.story.id;
+
+  try {
+    const response = await fetch(`${apiBaseUrl}/api/bookmarks/${storyId}`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (response.ok) {
+      alert("Story bookmarked successfully!");
+    } else {
+      const errorData = await response.json();
+      alert(`Failed to bookmark story: ${errorData.message}`);
+    }
+  } catch (error) {
+    console.error("Error bookmarking story:", error);
+    alert("An error occurred while bookmarking the story.");
+  }
 };
 </script>
 
 <style scoped>
-.p-date {
-  font-size: 14px;
-  white-space: nowrap;
-  margin-left: auto;
-  font-size: 20px;
-}
-
-.p-username {
-  font-size: 20%;
-  margin-left: 10px;
-}
-
-.card-image {
-  border-radius: 15px;
-  min-height: 500px;
-  min-width: 500px;
-  object-fit: cover;
-}
-
+/* Desktop Styles */
 .card-image:hover {
   opacity: 0.5;
 }
 
 .image-container:hover .bookmark-icon {
-  transform: translateY(-10px); /* Naik ke atas */
+  transform: translateY(-10px);
+}
+
+.card:hover .card-title {
+  color: green;
+}
+
+.card-image {
+  border-radius: 15px;
+  min-height: 600px;
+  width: 100%;
+  object-fit: cover;
 }
 
 .card {
   border: none;
   width: 100%;
+  max-width: 800px;
   margin: 0 auto;
-  margin-left: 90px;
+  background: #ffffff;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .card-title {
-  margin-bottom: 10px;
-  font-size: 18px;
+  margin-bottom: 15px;
+  font-size: 28px;
   font-weight: bold;
+  color: #333;
 }
 
 .card-text {
-  font-size: 14px;
+  font-size: 16px;
   color: #6c757d;
-  line-height: 1.5;
+  line-height: 1.6;
+}
+
+.card-body {
+  padding: 25px;
 }
 
 .footer-card {
+  padding: 20px 25px;
+  border-top: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.user-info {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-top: 10px;
+  gap: 15px;
+}
+
+.user-details {
+  display: flex;
+  flex-direction: column;
 }
 
 .profile-pic {
-  width: 40px;
-  height: 40px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
+  object-fit: cover;
+}
+
+.username {
+  font-size: 18px;
+  color: #333;
+  font-weight: 600;
+}
+
+.date {
+  font-size: 14px;
+  color: #666;
+  margin-top: 2px;
 }
 
 .category {
   background-color: #f0f5ed;
   color: #466543;
-  padding: 5px 10px;
-  border-radius: 5px;
-  font-size: 20px;
-  margin-left: 15px;
+  padding: 10px 20px;
+  border-radius: 25px;
+  font-size: 16px;
+  font-weight: 500;
 }
 
 .image-container {
@@ -146,13 +206,149 @@ const navigateToStory = () => {
 
 .bookmark-icon {
   position: absolute;
-  bottom: 10px;
-  right: 10px;
-  background-color: #466543;
+  bottom: 30px;
+  right: 30px;
+  background-color: rgba(70, 101, 67, 0.9);
   border-radius: 50%;
-  padding: 8px;
+  padding: 12px;
   cursor: pointer;
-  transform: translateY(0); /* Posisi awal */
-  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1); /* Animasi lebih smooth */
+  transform: translateY(0);
+  transition: all 0.3s ease;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+}
+
+.bookmark-icon:active {
+  transform: scale(0.95);
+}
+
+/* Media Queries untuk Mobile */
+@media screen and (max-width: 768px) {
+  .card {
+    width: 100%;
+    margin: 15px auto;
+    border-radius: 12px;
+  }
+
+  .card-image {
+    min-height: 300px;
+    border-radius: 12px 12px 0 0;
+  }
+
+  .card-body {
+    padding: 20px;
+  }
+
+  .card-title {
+    font-size: 22px;
+    margin-bottom: 12px;
+  }
+
+  .card-text {
+    font-size: 14px;
+    line-height: 1.5;
+    margin-bottom: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .footer-card {
+    padding: 15px 20px;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .user-info {
+    width: 100%;
+  }
+
+  .profile-pic {
+    width: 40px;
+    height: 40px;
+  }
+
+  .username {
+    font-size: 16px;
+  }
+
+  .date {
+    font-size: 13px;
+  }
+
+  .category {
+    width: 100%;
+    text-align: center;
+    padding: 8px 15px;
+    font-size: 14px;
+    border-radius: 20px;
+  }
+
+  .bookmark-icon {
+    bottom: 15px;
+    right: 15px;
+    padding: 12px;
+    background-color: rgba(70, 101, 67, 0.95);
+    transform: scale(1.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  .bookmark-icon:active {
+    transform: scale(1.05);
+    background-color: rgba(70, 101, 67, 1);
+  }
+}
+
+/* Untuk layar yang sangat kecil */
+@media screen and (max-width: 480px) {
+  .card {
+    margin: 10px auto;
+  }
+
+  .card-image {
+    min-height: 250px;
+  }
+
+  .card-body {
+    padding: 15px;
+  }
+
+  .card-title {
+    font-size: 20px;
+  }
+
+  .card-text {
+    font-size: 13px;
+    -webkit-line-clamp: 3;
+  }
+
+  .footer-card {
+    padding: 12px 15px;
+  }
+
+  .profile-pic {
+    width: 36px;
+    height: 36px;
+  }
+
+  .username {
+    font-size: 15px;
+  }
+
+  .date {
+    font-size: 12px;
+  }
+
+  .category {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+
+  .bookmark-icon {
+    padding: 10px;
+    transform: scale(1);
+  }
 }
 </style>

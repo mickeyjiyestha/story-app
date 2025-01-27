@@ -17,6 +17,7 @@
       rel="stylesheet"
     />
   </div>
+
   <!-- Modal untuk login success -->
   <div v-if="showLoginModal" class="modal">
     <div class="modal-content">
@@ -42,10 +43,16 @@
     </p>
     <p class="text-opening text-center">through the power of story.</p>
 
-    <div class="search-container mt-5">
+    <div class="search-container">
       <div class="search-box">
-        <input type="text" class="search-input" placeholder="Search Story" />
-        <i class="fas fa-search search-icon"></i>
+        <input
+          type="text"
+          class="search-input"
+          placeholder="Search Story"
+          v-model="searchKeyword"
+          @keyup.enter="searchStories"
+        />
+        <i class="fas fa-search search-icon" @click="searchStories"></i>
       </div>
     </div>
 
@@ -197,32 +204,59 @@ import { computed, ref, onMounted } from "vue";
 import { useAuthStore } from "@/stores/authStore";
 import {
   fetchAllStories,
+  fetchStoriesByKeyword,
   fetchStoriesByLatest,
   fetchStoriesByRomance,
   fetchStoriesByComedy,
   fetchStoriesByHorror,
 } from "@/services/apiService";
+import { useRouter } from "vue-router";
+
+const router = useRouter();
 
 const authStore = useAuthStore();
 const isAuthenticated = computed(() => authStore.isAuthenticated);
 const user = authStore.user;
 
-// Modal visibility
 const showLoginModal = ref(false);
 
-// Stories state
 const stories = ref([]);
 const categoryLatest = ref([]);
 const categoryRomance = ref([]);
 const categoryComedy = ref([]);
 const categoryHorror = ref([]);
+const searchKeyword = ref("");
+const searchResults = ref([]);
 
-const apiBaseUrl = "https://e016-103-19-231-196.ngrok-free.app"; // Ganti dengan URL API Anda
-const token = authStore.token; // Asumsikan Anda memiliki token di authStore
+const apiBaseUrl = "https://52fb-103-19-231-239.ngrok-free.app";
+const token = authStore.token;
 
 // Close modal
 const closeLoginModal = () => {
   showLoginModal.value = false;
+};
+
+const searchStories = async () => {
+  if (searchKeyword.value.trim()) {
+    try {
+      const results = await fetchStoriesByKeyword(searchKeyword.value);
+
+      if (results && results.data && Array.isArray(results.data.stories)) {
+        searchResults.value = results.data.stories;
+        console.log("Search Results:", searchResults.value);
+
+        router.push({
+          path: "/allstory",
+          query: { keyword: searchKeyword.value },
+        });
+      } else {
+        console.error("No search results found.");
+        searchResults.value = [];
+      }
+    } catch (error) {
+      console.error("Error during searchStories execution:", error);
+    }
+  }
 };
 
 onMounted(async () => {
@@ -237,7 +271,7 @@ onMounted(async () => {
     }
 
     // Fetch cerita berdasarkan kategori
-    const categoryStories = await fetchStoriesByLatest(1); // Ganti ID kategori sesuai kebutuhan
+    const categoryStories = await fetchStoriesByLatest(1);
     if (categoryStories && Array.isArray(categoryStories)) {
       categoryLatest.value = categoryStories;
       console.log("Fetched Stories By Latest:", categoryLatest.value);
@@ -245,7 +279,7 @@ onMounted(async () => {
       console.error("No stories found for the specified category.");
     }
 
-    const storiesByRomance = await fetchStoriesByRomance(2); // Ganti ID kategori sesuai kebutuhan
+    const storiesByRomance = await fetchStoriesByRomance(2);
     if (storiesByRomance && Array.isArray(storiesByRomance)) {
       categoryRomance.value = storiesByRomance;
       console.log("Fetched Stories By Romance:", categoryRomance.value);
@@ -253,7 +287,7 @@ onMounted(async () => {
       console.error("No stories found for the specified category.");
     }
 
-    const storiesByComedy = await fetchStoriesByComedy(3); // Ganti ID kategori sesuai kebutuhan
+    const storiesByComedy = await fetchStoriesByComedy(3);
     if (storiesByComedy && Array.isArray(storiesByComedy)) {
       categoryComedy.value = storiesByComedy;
       console.log("Fetched Stories By Comedy:", categoryComedy.value);
@@ -261,7 +295,7 @@ onMounted(async () => {
       console.error("No stories found for the specified category.");
     }
 
-    const storiesByHorror = await fetchStoriesByHorror(1); // Ganti ID kategori sesuai kebutuhan
+    const storiesByHorror = await fetchStoriesByHorror(1);
     if (storiesByHorror && Array.isArray(storiesByHorror)) {
       categoryHorror.value = storiesByHorror;
       console.log("Fetched Stories By Horror:", categoryHorror.value);
@@ -273,12 +307,10 @@ onMounted(async () => {
   }
 });
 
-// Simulasi login berhasil
 const onLoginSuccess = () => {
   showLoginModal.value = true;
 };
 
-// Tampilkan modal jika sudah login
 if (isAuthenticated.value) {
   onLoginSuccess();
 }
@@ -334,6 +366,7 @@ if (isAuthenticated.value) {
 .card-container-comedy {
   height: auto;
   width: auto;
+  margin-right: 150px;
 }
 
 .sec-card {
@@ -480,5 +513,107 @@ if (isAuthenticated.value) {
   top: 10px;
   right: 10px;
   cursor: pointer;
+}
+
+@media screen and (max-width: 768px) {
+  .text-welcome {
+    font-size: 40px;
+    padding: 0 20px;
+  }
+
+  .text-opening {
+    font-size: 18px;
+    padding: 0 20px;
+  }
+
+  .text-latest,
+  .text-comedy,
+  .text-romance,
+  .text-horror {
+    font-size: 35px;
+    margin-left: 20px;
+  }
+
+  .text-explore {
+    font-size: 18px;
+    margin-right: 20px;
+    margin-top: 80px;
+  }
+
+  .search-box {
+    max-width: 90%;
+    margin: 0 20px;
+  }
+
+  .card-container {
+    margin-right: 0;
+    padding: 0 10px;
+  }
+
+  .first-card {
+    margin-left: 10px;
+  }
+
+  .card-container-comedy {
+    flex-direction: column;
+    margin-right: 0;
+  }
+
+  .sec-card-comedy {
+    margin-left: 10px;
+    margin-top: 20px;
+  }
+
+  .container-category {
+    margin-left: 20px;
+    flex-wrap: wrap;
+  }
+
+  .btn-category {
+    margin-right: 10px;
+    margin-bottom: 10px;
+  }
+
+  .modal-content {
+    max-width: 90%;
+    margin: 10% auto;
+  }
+}
+
+/* Tambahan untuk layar yang sangat kecil */
+@media screen and (max-width: 480px) {
+  .text-welcome {
+    font-size: 32px;
+  }
+
+  .text-opening {
+    font-size: 16px;
+  }
+
+  .text-latest,
+  .text-comedy,
+  .text-romance,
+  .text-horror {
+    font-size: 28px;
+  }
+
+  .text-explore {
+    font-size: 16px;
+  }
+
+  .logo-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+  }
+
+  .d-flex.p-3.justify-content-between {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .d-flex.p-3.justify-content-between p {
+    margin: 0 0 10px 0;
+  }
 }
 </style>
