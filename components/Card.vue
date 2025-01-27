@@ -59,7 +59,7 @@ const props = defineProps({
 });
 
 const getImageUrl = (url) => {
-  const apiBaseUrl = "https://52fb-103-19-231-239.ngrok-free.app";
+  const apiBaseUrl = "https://2cda-103-19-231-235.ngrok-free.app";
   return `${apiBaseUrl}${url}`;
 };
 
@@ -76,7 +76,7 @@ const navigateToStory = () => {
 };
 
 const handleBookmark = async () => {
-  const apiBaseUrl = "https://52fb-103-19-231-239.ngrok-free.app";
+  const apiBaseUrl = "https://2cda-103-19-231-235.ngrok-free.app";
   const token = authStore.token;
   const storyId = props.story.id;
 

@@ -96,7 +96,7 @@ onMounted(async () => {
   console.log("Using token:", authStore.token);
   try {
     const response = await axios.get(
-      "https://52fb-103-19-231-239.ngrok-free.app/api/categories",
+      "https://2cda-103-19-231-235.ngrok-free.app/api/categories",
       {
         headers: {
           Authorization: `Bearer ${authStore.token}`,
@@ -116,7 +116,7 @@ onMounted(async () => {
     storyId.value = storyIdFromRoute;
     try {
       const response = await axios.get(
-        `https://52fb-103-19-231-239.ngrok-free.app/api/stories/${storyIdFromRoute}`,
+        `https://2cda-103-19-231-235.ngrok-free.app/api/stories/${storyIdFromRoute}`,
         {
           headers: {
             "ngrok-skip-browser-warning": "69420",
@@ -135,7 +135,7 @@ onMounted(async () => {
       images.value = story.images
         ? story.images.map((image) => ({
             name: image.url
-              ? `https://52fb-103-19-231-239.ngrok-free.app${image.url}`
+              ? `https://2cda-103-19-231-235.ngrok-free.app${image.url}`
               : "",
           }))
         : [];
@@ -188,8 +188,8 @@ const uploadStory = async () => {
 
   try {
     const url = isEditMode.value
-      ? `https://52fb-103-19-231-239.ngrok-free.app/api/stories/${storyId.value}`
-      : "https://52fb-103-19-231-239.ngrok-free.app/api/stories";
+      ? `https://2cda-103-19-231-235.ngrok-free.app/api/stories/${storyId.value}`
+      : "https://2cda-103-19-231-235.ngrok-free.app/api/stories";
 
     const response = await axios.post(url, formData, {
       headers: {

@@ -228,7 +228,7 @@ const categoryHorror = ref([]);
 const searchKeyword = ref("");
 const searchResults = ref([]);
 
-const apiBaseUrl = "https://52fb-103-19-231-239.ngrok-free.app";
+const apiBaseUrl = "https://2cda-103-19-231-235.ngrok-free.app";
 const token = authStore.token;
 
 // Close modal

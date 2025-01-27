@@ -57,7 +57,7 @@ const props = defineProps({
 const router = useRouter(); // Initialize router
 
 const getImageUrl = (url) => {
-  const apiBaseUrl = "https://52fb-103-19-231-239.ngrok-free.app";
+  const apiBaseUrl = "https://2cda-103-19-231-235.ngrok-free.app";
   return `${apiBaseUrl}${url}`;
 };
 
@@ -85,7 +85,7 @@ const deleteStory = async (storyId) => {
 
     // Make the DELETE request to the API
     const response = await axios.delete(
-      `https://52fb-103-19-231-239.ngrok-free.app/api/stories/${storyId}`,
+      `https://2cda-103-19-231-235.ngrok-free.app/api/stories/${storyId}`,
       {
         headers: {
           Authorization: `Bearer ${token}`, // Include the token in the request headers
