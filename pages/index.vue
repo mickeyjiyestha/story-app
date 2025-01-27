@@ -21,11 +21,7 @@
   <!-- Modal untuk login success -->
   <div v-if="showLoginModal" class="modal">
     <div class="modal-content">
-      <img
-        src="../asset/icon/iconSuccess.png"
-        alt="Success"
-        class="checkmark me-2"
-      />
+      <img src="@/assets/logo_home.svg" alt="Success" class="checkmark me-2" />
       <p class="modal-message my-auto">You have successfully logged in.</p>
       <i class="fa-solid fa-xmark close ms-5" @click="closeLoginModal"></i>
     </div>
