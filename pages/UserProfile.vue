@@ -1,4 +1,5 @@
 <template>
+  <!-- Template remains unchanged -->
   <div>
     <link
       href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap"
@@ -93,7 +94,6 @@
       </div>
     </div>
 
-    <!-- Pagination at the bottom -->
     <div v-if="hasMoreStories" class="pagination-container">
       <Pagination
         :totalPages="totalPages"
@@ -489,11 +489,12 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+/* Desktop styles remain unchanged */
 .pagination-container {
   display: flex;
   margin-left: 1120px;
   margin-bottom: 20px;
-  margin-top: 20px; /* Add some space above the pagination */
+  margin-top: 20px;
 }
 
 .nostories-h1 {
@@ -593,8 +594,8 @@ onMounted(async () => {
 
 .card-container {
   display: grid;
-  grid-template-columns: repeat(2, 1fr); /* Membuat dua kolom */
-  gap: 20px; /* Menambahkan jarak antar kartu */
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
   overflow-x: auto;
   overflow-y: hidden;
   padding: 0 35px;
@@ -675,5 +676,146 @@ onMounted(async () => {
   height: 200px;
   border-radius: 50%;
   margin-right: 10px;
+}
+
+/* Tablet Responsive Styles */
+@media screen and (max-width: 1024px) {
+  .card-container {
+    grid-template-columns: 1fr;
+    margin-right: 20px;
+  }
+
+  .bottom-container {
+    flex-direction: column;
+    margin-left: 20px;
+  }
+
+  .sticky-story {
+    position: static;
+    margin-bottom: 30px;
+    padding: 20px;
+  }
+
+  .pagination-container {
+    margin-left: auto;
+    margin-right: auto;
+    justify-content: center;
+  }
+
+  .modal-dialog {
+    max-width: 90%;
+  }
+}
+
+/* Mobile Responsive Styles */
+@media screen and (max-width: 768px) {
+  .hero {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 30px;
+  }
+
+  .button-container {
+    margin-left: 0;
+    margin-top: 20px;
+  }
+
+  .description-container {
+    max-width: 100%;
+  }
+
+  .name {
+    font-size: 32px;
+    margin-left: 0;
+    margin-top: 20px;
+  }
+
+  .email {
+    margin-left: 0;
+  }
+
+  .description {
+    margin-left: 0;
+    font-size: 16px;
+  }
+
+  .container-menu {
+    margin-left: 20px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .story {
+    padding: 20px;
+  }
+
+  .story h1 {
+    font-size: 24px;
+  }
+
+  .container-p {
+    max-width: 100%;
+  }
+
+  .modal-body {
+    flex-direction: column;
+    height: auto;
+    padding: 15px;
+  }
+
+  .modal-title {
+    font-size: 28px;
+  }
+
+  .nostories-h1 {
+    margin-left: 0;
+    text-align: center;
+    font-size: 24px;
+  }
+
+  .nostories-p {
+    font-size: 16px;
+    text-align: center;
+  }
+
+  .containernostories {
+    margin-right: 0;
+    text-align: center;
+  }
+}
+
+/* Small Mobile Devices */
+@media screen and (max-width: 480px) {
+  .profile-pic {
+    width: 150px;
+    height: 150px;
+  }
+
+  .name {
+    font-size: 28px;
+  }
+
+  .email {
+    font-size: 16px;
+  }
+
+  .story h1 {
+    font-size: 20px;
+  }
+
+  .modal-dialog {
+    margin: 10px;
+  }
+
+  .btn-change-picture {
+    margin-top: 20px;
+    margin-left: 0;
+  }
+
+  .container-left,
+  .container-right {
+    margin-left: 0;
+  }
 }
 </style>

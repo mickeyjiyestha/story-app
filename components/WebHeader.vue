@@ -4,10 +4,10 @@
       <div
         class="container-fluid d-flex justify-content-between align-items-center"
       >
-        <nuxt-link to="/">
+        <nuxt-link to="/" class="logo-link">
           <img src="@/assets/logo.svg" alt="Logo" />
         </nuxt-link>
-        <div>
+        <div class="nav-buttons">
           <nuxt-link
             v-if="!isAuthenticated"
             to="/register"
@@ -132,5 +132,60 @@ const logout = () => {
 
 .dropdown-item:hover {
   background-color: #e0e0e0;
+}
+
+/* Mobile Responsive Styles */
+@media screen and (max-width: 768px) {
+  .navbar {
+    padding: 1rem !important;
+  }
+
+  .logo-link img {
+    max-width: 120px;
+    height: auto;
+  }
+
+  .nav-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .buttonRegister,
+  .buttonLogin {
+    padding: 10px 20px;
+    font-size: 16px;
+    margin-right: 0;
+  }
+
+  .my-profile {
+    margin-right: 0;
+  }
+
+  .profile-pic {
+    width: 32px;
+    height: 32px;
+  }
+
+  .dropdown-toggle {
+    font-size: 16px;
+  }
+
+  .dropdown-menu {
+    right: 0;
+    left: auto;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .buttonRegister,
+  .buttonLogin {
+    padding: 8px 16px;
+    font-size: 14px;
+  }
+
+  .dropdown-toggle {
+    font-size: 14px;
+  }
 }
 </style>

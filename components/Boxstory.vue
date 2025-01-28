@@ -31,7 +31,7 @@ const props = defineProps({
 const emit = defineEmits();
 
 const updateValue = (event) => {
-  emit("update:modelValue", event.target.value); // Emit event untuk mengupdate nilai
+  emit("update:modelValue", event.target.value);
 };
 </script>
 
@@ -60,5 +60,15 @@ const updateValue = (event) => {
 
 .input-field::placeholder {
   color: #999;
+}
+
+/* Mobile Responsive Styles */
+@media screen and (max-width: 768px) {
+  .input-field {
+    min-width: unset;
+    width: 100%;
+    min-height: 60px;
+    font-size: 14px;
+  }
 }
 </style>

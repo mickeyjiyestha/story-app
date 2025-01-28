@@ -3,7 +3,7 @@
     rel="stylesheet"
     href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
   />
-  <div class="d-flex" v-if="story">
+  <div class="card-wrapper" v-if="story">
     <div class="card" style="cursor: pointer" @click="navigateToStory">
       <div class="image-container position-relative">
         <img
@@ -12,11 +12,13 @@
           alt="Story Image"
         />
         <div class="bookmark-icon" @click.stop="handleBookmark">
-          <bookmark></bookmark>
+          <bookmark :class="{ 'bookmark-icon-black': isBookmarked }"></bookmark>
         </div>
       </div>
       <div class="card-body">
-        <h5 class="card-title">{{ story.title || "Untitled" }}</h5>
+        <h5 class="card-title text-truncate">
+          {{ story.title || "Untitled" }}
+        </h5>
         <p class="card-text">{{ truncateContent(story.content) }}</p>
       </div>
       <div class="footer-card">
@@ -27,7 +29,9 @@
             alt="Profile Picture"
           />
           <div class="user-details">
-            <h5 class="mb-0 username">{{ story.user.username || "Guest" }}</h5>
+            <h5 class="mb-0 username text-truncate">
+              {{ story.user.username || "Guest" }}
+            </h5>
             <p class="mb-0 date">{{ story.created_at }}</p>
           </div>
         </div>
@@ -59,7 +63,7 @@ const props = defineProps({
 });
 
 const getImageUrl = (url) => {
-  const apiBaseUrl = "https://2cda-103-19-231-235.ngrok-free.app";
+  const apiBaseUrl = "https://e602-103-19-231-235.ngrok-free.app";
   return `${apiBaseUrl}${url}`;
 };
 
@@ -76,7 +80,7 @@ const navigateToStory = () => {
 };
 
 const handleBookmark = async () => {
-  const apiBaseUrl = "https://2cda-103-19-231-235.ngrok-free.app";
+  const apiBaseUrl = "https://e602-103-19-231-235.ngrok-free.app";
   const token = authStore.token;
   const storyId = props.story.id;
 
@@ -104,6 +108,12 @@ const handleBookmark = async () => {
 
 <style scoped>
 /* Desktop Styles */
+.card-wrapper {
+  width: 320px;
+  flex-shrink: 0;
+  margin: 0 15px;
+}
+
 .card-image:hover {
   opacity: 0.5;
 }
@@ -116,93 +126,120 @@ const handleBookmark = async () => {
   color: green;
 }
 
+.image-container {
+  position: relative;
+  width: 320px;
+  height: 320px;
+  overflow: hidden;
+}
+
 .card-image {
-  border-radius: 15px;
-  min-height: 500px;
-  min-width: 500px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
+  border-radius: 15px 15px 0 0;
 }
 
 .card {
   border: none;
   width: 100%;
-  margin: 0 auto;
+  height: auto;
   background: #ffffff;
   border-radius: 15px;
   overflow: hidden;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
 }
 
 .card-title {
   margin-bottom: 10px;
-  font-size: 25px;
+  font-size: 20px;
   font-weight: bold;
   color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
 .card-text {
   font-size: 14px;
   color: #6c757d;
   line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  height: 63px;
 }
 
 .card-body {
-  padding: 20px;
+  padding: 15px;
+  flex: 0 0 auto;
 }
 
 .footer-card {
-  padding: 15px 20px;
+  padding: 12px 15px;
   border-top: 1px solid #eee;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-top: auto;
 }
 
 .user-info {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
+  max-width: 60%;
 }
 
 .user-details {
   display: flex;
   flex-direction: column;
+  min-width: 0;
+  flex: 1;
 }
 
 .profile-pic {
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   object-fit: cover;
+  flex-shrink: 0;
 }
 
 .username {
-  font-size: 16px;
+  font-size: 14px;
   color: #333;
   font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .date {
-  font-size: 14px;
+  font-size: 12px;
   color: #666;
 }
 
 .category {
   background-color: #f0f5ed;
   color: #466543;
-  padding: 8px 16px;
+  padding: 6px 12px;
   border-radius: 20px;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 500;
-}
-
-.image-container {
-  position: relative;
+  white-space: nowrap;
 }
 
 .bookmark-icon {
   position: absolute;
-  bottom: 30px;
+  bottom: 20px;
   right: 20px;
   background-color: rgba(70, 101, 67, 0.9);
   border-radius: 50%;
@@ -221,92 +258,14 @@ const handleBookmark = async () => {
 
 /* Media Queries untuk Mobile */
 @media screen and (max-width: 768px) {
-  .card {
-    width: 100%;
-    margin: 10px 0;
-    border-radius: 12px;
+  .card-wrapper {
+    width: 280px;
+    margin: 0 10px;
   }
 
-  .card-image {
-    min-height: 200px;
-    min-width: 100%;
-    border-radius: 12px 12px 0 0;
-  }
-
-  .card-body {
-    padding: 15px;
-  }
-
-  .card-title {
-    font-size: 18px;
-    margin-bottom: 8px;
-  }
-
-  .card-text {
-    font-size: 13px;
-    line-height: 1.4;
-    margin-bottom: 0;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-
-  .footer-card {
-    padding: 12px 15px;
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .user-info {
-    width: 100%;
-  }
-
-  .profile-pic {
-    width: 32px;
-    height: 32px;
-  }
-
-  .username {
-    font-size: 14px;
-  }
-
-  .date {
-    font-size: 12px;
-  }
-
-  .category {
-    width: 100%;
-    text-align: center;
-    padding: 6px 12px;
-    font-size: 12px;
-    background-color: #f0f5ed;
-    border-radius: 15px;
-  }
-
-  .bookmark-icon {
-    bottom: 10px;
-    right: 10px;
-    padding: 10px;
-    background-color: rgba(70, 101, 67, 0.95);
-    transform: scale(1.1);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-  }
-
-  .bookmark-icon:active {
-    transform: scale(1.05);
-    background-color: rgba(70, 101, 67, 1);
-  }
-}
-
-/* Untuk layar yang sangat kecil */
-@media screen and (max-width: 480px) {
-  .card {
-    margin: 8px 0;
-  }
-
-  .card-image {
-    min-height: 180px;
+  .image-container {
+    width: 280px;
+    height: 280px;
   }
 
   .card-body {
@@ -315,15 +274,27 @@ const handleBookmark = async () => {
 
   .card-title {
     font-size: 16px;
+    margin-bottom: 8px;
   }
 
   .card-text {
-    font-size: 12px;
-    -webkit-line-clamp: 2;
+    font-size: 13px;
+    line-height: 1.4;
+    margin-bottom: 0;
+    height: auto;
+    max-height: 54px;
   }
 
   .footer-card {
     padding: 10px 12px;
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+  }
+
+  .user-info {
+    width: 100%;
+    max-width: 100%;
   }
 
   .profile-pic {
@@ -340,13 +311,60 @@ const handleBookmark = async () => {
   }
 
   .category {
+    width: 100%;
+    text-align: center;
     padding: 4px 10px;
     font-size: 11px;
   }
 
   .bookmark-icon {
-    padding: 8px;
-    transform: scale(1);
+    bottom: 10px;
+    right: 10px;
+    padding: 6px;
+  }
+}
+
+/* Untuk layar yang sangat kecil */
+@media screen and (max-width: 480px) {
+  .card-wrapper {
+    width: 260px;
+    margin: 0 8px;
+  }
+
+  .image-container {
+    width: 260px;
+    height: 260px;
+  }
+
+  .card-title {
+    font-size: 15px;
+  }
+
+  .card-text {
+    font-size: 12px;
+    max-height: 48px;
+  }
+
+  .footer-card {
+    padding: 8px 10px;
+  }
+
+  .profile-pic {
+    width: 24px;
+    height: 24px;
+  }
+
+  .username {
+    font-size: 12px;
+  }
+
+  .date {
+    font-size: 10px;
+  }
+
+  .category {
+    padding: 3px 8px;
+    font-size: 10px;
   }
 }
 </style>

@@ -38,9 +38,10 @@
 </template>
 
 <script setup>
+// Script remains unchanged
 import { defineProps } from "vue";
-import { useRouter } from "vue-router"; // Import useRouter
-import { useAuthStore } from "@/stores/authStore"; // Adjust the import path
+import { useRouter } from "vue-router";
+import { useAuthStore } from "@/stores/authStore";
 import axios from "axios";
 
 const props = defineProps({
@@ -54,10 +55,10 @@ const props = defineProps({
   },
 });
 
-const router = useRouter(); // Initialize router
+const router = useRouter();
 
 const getImageUrl = (url) => {
-  const apiBaseUrl = "https://2cda-103-19-231-235.ngrok-free.app";
+  const apiBaseUrl = "https://e602-103-19-231-235.ngrok-free.app";
   return `${apiBaseUrl}${url}`;
 };
 
@@ -67,36 +68,33 @@ const truncateContent = (content) => {
 };
 
 const navigateToStory = () => {
-  router.push({ path: `/detail`, query: { storyId: props.story.id } }); // Navigate to detail page
+  router.push({ path: `/detail`, query: { storyId: props.story.id } });
 };
 
 const navigateToEditStory = (storyId) => {
-  router.push({ path: `/addstory`, query: { storyId } }); // Arahkan ke halaman AddStory
+  router.push({ path: `/addstory`, query: { storyId } });
 };
 
 const deleteStory = async (storyId) => {
   try {
-    const token = useAuthStore().token; // Retrieve the token from the Pinia store
+    const token = useAuthStore().token;
 
     if (!token) {
       console.error("No authentication token found.");
-      return; // Exit the function if no token is found
+      return;
     }
 
-    // Make the DELETE request to the API
     const response = await axios.delete(
-      `https://2cda-103-19-231-235.ngrok-free.app/api/stories/${storyId}`,
+      `https://e602-103-19-231-235.ngrok-free.app/api/stories/${storyId}`,
       {
         headers: {
-          Authorization: `Bearer ${token}`, // Include the token in the request headers
+          Authorization: `Bearer ${token}`,
         },
       }
     );
 
     console.log("Story deleted:", response.data);
-
-    // Refresh the page after successful deletion
-    location.reload(); // This will refresh the entire page
+    location.reload();
   } catch (error) {
     console.error(
       "Error deleting story:",
@@ -107,6 +105,7 @@ const deleteStory = async (storyId) => {
 </script>
 
 <style scoped>
+/* Desktop styles remain unchanged */
 .p-date {
   font-size: 20px;
   white-space: nowrap;
@@ -203,5 +202,106 @@ const deleteStory = async (storyId) => {
   margin-right: 200px;
   margin-bottom: 20px;
   cursor: pointer;
+}
+
+/* Tablet Responsive Styles */
+@media screen and (max-width: 1024px) {
+  .card {
+    margin-left: 20px;
+    margin-right: 20px;
+  }
+
+  .card-image {
+    min-width: 100%;
+    min-height: 400px;
+  }
+}
+
+/* Mobile Responsive Styles */
+@media screen and (max-width: 768px) {
+  .card {
+    margin-left: 10px;
+    margin-right: 10px;
+  }
+
+  .card-image {
+    min-height: 300px;
+    min-width: 100%;
+  }
+
+  .card-title {
+    font-size: 16px;
+  }
+
+  .card-text {
+    font-size: 14px;
+  }
+
+  .category {
+    font-size: 16px;
+  }
+
+  .p-date {
+    font-size: 16px;
+  }
+
+  .footer-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .bookmark-icon,
+  .delete-icon,
+  .edit-icon {
+    padding: 6px;
+    margin-bottom: 10px;
+  }
+
+  .bookmark-icon {
+    margin-right: 80px;
+  }
+
+  .edit-icon {
+    margin-right: 140px;
+  }
+}
+
+/* Small Mobile Devices */
+@media screen and (max-width: 480px) {
+  .card-image {
+    min-height: 200px;
+  }
+
+  .card-title {
+    font-size: 14px;
+  }
+
+  .card-text {
+    font-size: 12px;
+  }
+
+  .category {
+    font-size: 14px;
+  }
+
+  .p-date {
+    font-size: 14px;
+  }
+
+  .bookmark-icon,
+  .delete-icon,
+  .edit-icon {
+    padding: 4px;
+    margin-bottom: 8px;
+  }
+
+  .bookmark-icon {
+    margin-right: 60px;
+  }
+
+  .edit-icon {
+    margin-right: 100px;
+  }
 }
 </style>

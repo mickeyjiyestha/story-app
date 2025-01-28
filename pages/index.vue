@@ -21,7 +21,7 @@
   <!-- Modal untuk login success -->
   <div v-if="showLoginModal" class="modal">
     <div class="modal-content">
-      <img src="@/assets/logo_home.svg" alt="Success" class="checkmark me-2" />
+      <img src="" alt="Success" class="checkmark me-2" />
       <p class="modal-message my-auto">You have successfully logged in.</p>
       <i class="fa-solid fa-xmark close ms-5" @click="closeLoginModal"></i>
     </div>
@@ -53,12 +53,12 @@
     </div>
 
     <div class="d-flex justify-content-center mt-5 mb-5">
-      <img src="@/assets/logo_home.svg" alt="" />
+      <img src="@/assets/logo_home.svg" alt="" class="logo-home" />
     </div>
 
     <!-- Latest Story  -->
     <div>
-      <div class="d-flex justify-content-between">
+      <div class="d-flex justify-content-between section-header">
         <h1 class="text-latest">Latest Story</h1>
         <nuxt-link to="/allstory">
           <p class="text-explore">
@@ -88,7 +88,7 @@
 
     <!--  Comedy -->
     <div>
-      <div class="d-flex justify-content-between">
+      <div class="d-flex justify-content-between section-header">
         <h1 class="text-comedy">Comedy</h1>
         <nuxt-link to="/allstory">
           <p class="text-explore">
@@ -100,7 +100,6 @@
         <hr class="custom-hr" />
       </div>
 
-      <!-- Kontainer untuk kartu -->
       <div class="card-container-comedy d-flex">
         <div class="first-card">
           <CardBig :story="categoryComedy[0]" class="card-home"></CardBig>
@@ -114,7 +113,7 @@
 
     <!-- Romance -->
     <div>
-      <div class="d-flex justify-content-between">
+      <div class="d-flex justify-content-between section-header">
         <h1 class="text-romance">Romance</h1>
         <nuxt-link to="/allstory">
           <p class="text-explore">
@@ -128,7 +127,7 @@
 
       <div class="card-container">
         <div
-          v-for="(story, index) in categoryRomance"
+          v-for="(story, index) in categoryRomance.slice(0, 3)"
           :key="index"
           class="first-card"
         >
@@ -144,7 +143,7 @@
 
     <!--  Horror -->
     <div>
-      <div class="d-flex justify-content-between">
+      <div class="d-flex justify-content-between section-header">
         <h1 class="text-horror">Horror</h1>
         <nuxt-link to="/allstory">
           <p class="text-explore">
@@ -156,7 +155,6 @@
         <hr class="custom-hr" />
       </div>
 
-      <!-- Kontainer untuk kartu -->
       <div class="card-container-comedy d-flex">
         <div class="first-card">
           <CardBig :story="categoryHorror[0]" class="card-home"></CardBig>
@@ -183,12 +181,12 @@
         <Buttoncategory class="btn-category"></Buttoncategory>
       </div>
       <hr />
-      <div class="d-flex p-3 justify-content-between">
-        <p class="ml-5">PT. Timedoor Indonesia. All right reserved</p>
+      <div class="footer-content d-flex p-3 justify-content-between">
+        <p class="copyright ml-5">PT. Timedoor Indonesia. All right reserved</p>
         <div class="logo-container">
-          <img src="@/assets/fb.png" class="mr-3" alt="" />
-          <img src="@/assets/yt.png" class="mr-3" alt="" />
-          <img src="@/assets/ig.png" class="mr-3" alt="" />
+          <img src="@/assets/fb.png" class="social-icon mr-3" alt="Facebook" />
+          <img src="@/assets/yt.png" class="social-icon mr-3" alt="YouTube" />
+          <img src="@/assets/ig.png" class="social-icon mr-3" alt="Instagram" />
         </div>
       </div>
     </div>
@@ -224,7 +222,7 @@ const categoryHorror = ref([]);
 const searchKeyword = ref("");
 const searchResults = ref([]);
 
-const apiBaseUrl = "https://2cda-103-19-231-235.ngrok-free.app";
+const apiBaseUrl = "https://2105-103-100-175-121.ngrok-free.app";
 const token = authStore.token;
 
 // Close modal
@@ -372,6 +370,7 @@ if (isAuthenticated.value) {
 .latest-container h1 {
   margin-left: 100px;
 }
+
 .card-container {
   display: flex;
   margin-right: 10px;
@@ -385,14 +384,15 @@ if (isAuthenticated.value) {
 
 .card {
   border: none;
-  width: 300px; /* Adjust the width as needed */
+  width: 300px;
   margin: 0;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Optional: for better visuals */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .card-container::-webkit-scrollbar {
   display: none;
 }
+
 .text-welcome {
   font-family: Playfair Display, sans-serif;
   font-weight: 800;
@@ -431,6 +431,7 @@ if (isAuthenticated.value) {
   justify-content: center;
   align-items: center;
   width: 100%;
+  padding: 0 20px;
 }
 
 .search-box {
@@ -511,6 +512,31 @@ if (isAuthenticated.value) {
   cursor: pointer;
 }
 
+/* Tablet Responsive Styles */
+@media screen and (max-width: 1024px) {
+  .card-container-comedy {
+    flex-direction: column;
+    margin-right: 20px;
+  }
+
+  .sec-card-comedy {
+    margin-left: 90px;
+    margin-top: 20px;
+  }
+
+  .text-explore {
+    margin-right: 20px;
+  }
+
+  .container-category {
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-left: 0;
+    padding: 0 20px;
+  }
+}
+
+/* Mobile Responsive Styles */
 @media screen and (max-width: 768px) {
   .text-welcome {
     font-size: 40px;
@@ -522,61 +548,68 @@ if (isAuthenticated.value) {
     padding: 0 20px;
   }
 
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    margin-bottom: 20px;
+  }
+
   .text-latest,
   .text-comedy,
   .text-romance,
   .text-horror {
     font-size: 35px;
     margin-left: 20px;
+    margin-bottom: 10px;
+    margin-top: 40px;
   }
 
   .text-explore {
     font-size: 18px;
-    margin-right: 20px;
-    margin-top: 80px;
-  }
-
-  .search-box {
-    max-width: 90%;
-    margin: 0 20px;
-  }
-
-  .card-container {
-    margin-right: 0;
-    padding: 0 10px;
+    margin: 0 0 0 20px;
   }
 
   .first-card {
-    margin-left: 10px;
-  }
-
-  .card-container-comedy {
-    flex-direction: column;
-    margin-right: 0;
+    margin-left: 20px;
   }
 
   .sec-card-comedy {
-    margin-left: 10px;
-    margin-top: 20px;
+    margin-left: 20px;
   }
 
-  .container-category {
-    margin-left: 20px;
-    flex-wrap: wrap;
+  .card-container {
+    margin-right: 20px;
+    padding: 0 10px;
+  }
+
+  .logo-home {
+    max-width: 80%;
+    height: auto;
+  }
+
+  .footer-content {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 20px;
+  }
+
+  .copyright {
+    margin: 0 0 15px 0;
+  }
+
+  .social-icon {
+    width: 30px;
+    height: auto;
+    margin: 0 10px;
   }
 
   .btn-category {
-    margin-right: 10px;
-    margin-bottom: 10px;
-  }
-
-  .modal-content {
-    max-width: 90%;
-    margin: 10% auto;
+    margin: 5px;
   }
 }
 
-/* Tambahan untuk layar yang sangat kecil */
+/* Small Mobile Devices */
 @media screen and (max-width: 480px) {
   .text-welcome {
     font-size: 32px;
@@ -593,23 +626,30 @@ if (isAuthenticated.value) {
     font-size: 28px;
   }
 
-  .text-explore {
-    font-size: 16px;
+  .search-box {
+    max-width: 100%;
   }
 
-  .logo-container {
-    display: flex;
-    justify-content: center;
-    margin-top: 10px;
+  .search-input {
+    font-size: 14px;
   }
 
-  .d-flex.p-3.justify-content-between {
-    flex-direction: column;
-    text-align: center;
+  .modal-content {
+    width: 90%;
+    padding: 15px;
   }
 
-  .d-flex.p-3.justify-content-between p {
-    margin: 0 0 10px 0;
+  .first-card {
+    margin-left: 10px;
+  }
+
+  .sec-card-comedy {
+    margin-left: 10px;
+  }
+
+  .social-icon {
+    width: 25px;
+    margin: 0 8px;
   }
 }
 </style>

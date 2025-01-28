@@ -36,7 +36,6 @@ const files = ref([]);
 const handleFileChange = (event) => {
   const selectedFiles = Array.from(event.target.files);
 
-  // Tambahkan file baru ke dalam daftar file yang sudah ada, pastikan tidak ada duplikat
   const newFiles = selectedFiles.filter(
     (newFile) => !files.value.some((f) => f.file.name === newFile.name)
   );
@@ -49,7 +48,6 @@ const handleFileChange = (event) => {
     }))
   );
 
-  // Emit semua file yang dipilih
   emit(
     "update:modelValue",
     files.value.map((f) => f.file)
@@ -57,11 +55,11 @@ const handleFileChange = (event) => {
 };
 
 const triggerFileInput = () => {
-  fileInput.value.click(); // Memicu klik pada input file
+  fileInput.value.click();
 };
 
 const removeFile = (index) => {
-  files.value.splice(index, 1); // Hapus file dari daftar
+  files.value.splice(index, 1);
   emit(
     "update:modelValue",
     files.value.map((f) => f.file)
@@ -76,24 +74,24 @@ const removeFile = (index) => {
 }
 
 .upload-box {
-  width: 400px; /* Atur lebar */
-  height: 400px; /* Atur tinggi */
-  border: 2px solid #ccc; /* Garis bersambung */
+  width: 400px;
+  height: 400px;
+  border: 2px solid #ccc;
   border-radius: 8px;
-  display: flex; /* Menggunakan Flexbox */
-  flex-direction: column; /* Mengatur arah kolom */
-  justify-content: center; /* Menyusun konten di tengah secara vertikal */
-  align-items: center; /* Menyusun konten di tengah secara horizontal */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   cursor: pointer;
   position: relative;
 }
 
 .upload-input {
-  display: none; /* Sembunyikan input file */
+  display: none;
 }
 
 .upload-content {
-  text-align: center; /* Menyusun teks di tengah */
+  text-align: center;
 }
 
 .upload-icon {
@@ -105,5 +103,98 @@ const removeFile = (index) => {
   display: block;
   margin-top: 10px;
   color: #999;
+}
+
+.preview-container {
+  margin-top: 20px;
+}
+
+.preview-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.preview-image {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 4px;
+  margin-right: 10px;
+}
+
+.file-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.remove-btn {
+  padding: 5px 10px;
+  background-color: #ff4444;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* Mobile Responsive Styles */
+@media screen and (max-width: 768px) {
+  .upload-container {
+    max-width: 100%;
+    padding: 0 15px;
+  }
+
+  .upload-box {
+    width: 100%;
+    height: 300px;
+  }
+
+  .upload-icon {
+    font-size: 32px;
+  }
+
+  .upload-text {
+    font-size: 14px;
+  }
+
+  .preview-item {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .preview-image {
+    width: 100%;
+    height: 200px;
+    margin-right: 0;
+    margin-bottom: 10px;
+  }
+
+  .file-name {
+    margin-bottom: 10px;
+  }
+
+  .remove-btn {
+    width: 100%;
+    padding: 8px;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .upload-box {
+    height: 200px;
+  }
+
+  .upload-icon {
+    font-size: 28px;
+  }
+
+  .preview-image {
+    height: 150px;
+  }
 }
 </style>

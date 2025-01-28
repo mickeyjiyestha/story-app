@@ -96,7 +96,7 @@ onMounted(async () => {
   console.log("Using token:", authStore.token);
   try {
     const response = await axios.get(
-      "https://2cda-103-19-231-235.ngrok-free.app/api/categories",
+      "https://e602-103-19-231-235.ngrok-free.app/api/categories",
       {
         headers: {
           Authorization: `Bearer ${authStore.token}`,
@@ -116,7 +116,7 @@ onMounted(async () => {
     storyId.value = storyIdFromRoute;
     try {
       const response = await axios.get(
-        `https://2cda-103-19-231-235.ngrok-free.app/api/stories/${storyIdFromRoute}`,
+        `https://e602-103-19-231-235.ngrok-free.app/api/stories/${storyIdFromRoute}`,
         {
           headers: {
             "ngrok-skip-browser-warning": "69420",
@@ -135,7 +135,7 @@ onMounted(async () => {
       images.value = story.images
         ? story.images.map((image) => ({
             name: image.url
-              ? `https://2cda-103-19-231-235.ngrok-free.app${image.url}`
+              ? `https://e602-103-19-231-235.ngrok-free.app${image.url}`
               : "",
           }))
         : [];
@@ -188,8 +188,8 @@ const uploadStory = async () => {
 
   try {
     const url = isEditMode.value
-      ? `https://2cda-103-19-231-235.ngrok-free.app/api/stories/${storyId.value}`
-      : "https://2cda-103-19-231-235.ngrok-free.app/api/stories";
+      ? `https://e602-103-19-231-235.ngrok-free.app/api/stories/${storyId.value}`
+      : "https://e602-103-19-231-235.ngrok-free.app/api/stories";
 
     const response = await axios.post(url, formData, {
       headers: {
@@ -227,6 +227,9 @@ const removeImage = (index) => {
 .arrow-left {
   text-decoration: none;
   color: black;
+  font-size: 40px;
+  margin-left: 110px;
+  margin-top: 155px;
 }
 
 .container-upload {
@@ -242,28 +245,28 @@ const removeImage = (index) => {
 }
 
 .category-input {
-  position: relative; /* Untuk positioning dropdown */
-  cursor: pointer; /* Menunjukkan bahwa ini dapat diklik */
+  position: relative;
+  cursor: pointer;
 }
 
 .dropdown {
-  position: absolute; /* Menempatkan dropdown di bawah input */
+  position: absolute;
   background: white;
   border: 1px solid #ccc;
-  z-index: 10; /* Pastikan dropdown di atas elemen lain */
-  width: 100%; /* Sesuaikan lebar dropdown dengan lebar input */
-  max-width: 250px; /* Atur lebar maksimum untuk dropdown */
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Tambahkan bayangan untuk efek visual */
+  z-index: 10;
+  width: 100%;
+  max-width: 250px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .dropdown ul {
-  list-style-type: none; /* Menghilangkan bullet points */
-  padding: 0; /* Menghilangkan padding */
-  margin: 0; /* Menghilangkan margin */
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
 }
 
 .uploaded-image {
-  max-width: 600px; /* Ubah ukuran sesuai kebutuhan */
+  max-width: 600px;
   margin-right: 10px;
 }
 
@@ -283,22 +286,16 @@ const removeImage = (index) => {
 }
 
 .dropdown-item {
-  padding: 10px; /* Padding untuk item dropdown */
-  cursor: pointer; /* Menunjukkan bahwa ini dapat diklik */
+  padding: 10px;
+  cursor: pointer;
 }
 
 .dropdown-item:hover {
-  background-color: #f0f0f0; /* Efek hover untuk item dropdown */
+  background-color: #f0f0f0;
 }
 
 .container-button {
   margin-left: 100px;
-}
-
-.arrow-left {
-  font-size: 40px;
-  margin-left: 110px;
-  margin-top: 155px;
 }
 
 .container-header {
@@ -310,5 +307,61 @@ const removeImage = (index) => {
   font-family: Playfair Display, sans-serif;
   font-weight: 500;
   font-size: 40px;
+}
+
+/* Mobile Responsive Styles */
+@media screen and (max-width: 768px) {
+  .container-feild {
+    margin-left: 20px;
+    margin-right: 20px;
+  }
+
+  .arrow-left {
+    margin-left: 20px;
+    margin-top: 100px;
+    font-size: 30px;
+  }
+
+  .container-header {
+    margin-left: 20px;
+  }
+
+  .text-header {
+    margin-top: 100px;
+    font-size: 32px;
+  }
+
+  .container-button {
+    margin-left: 20px;
+    flex-direction: column-reverse;
+  }
+
+  .container-cancel {
+    margin-right: 0;
+    margin-top: 10px;
+  }
+
+  .uploaded-image {
+    max-width: 100%;
+  }
+
+  .image-container {
+    flex-direction: column;
+  }
+
+  .remove-button {
+    margin-left: 0;
+    margin-top: 10px;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .text-header {
+    font-size: 28px;
+  }
+
+  .arrow-left {
+    font-size: 24px;
+  }
 }
 </style>

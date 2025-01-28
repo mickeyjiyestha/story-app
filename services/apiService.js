@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const apiClient = axios.create({
-  baseURL: "https://2cda-103-19-231-235.ngrok-free.app/api",
+  baseURL: "https://e602-103-19-231-235.ngrok-free.app/api",
   headers: {
     "Content-Type": "application/json",
   },
@@ -53,7 +53,7 @@ export const fetchUserStories = async (userId, token, apiBaseUrl, page = 1) => {
 };
 
 export const fetchAllStories = async () => {
-  const apiBaseUrl = "https://2cda-103-19-231-235.ngrok-free.app"; // Sesuaikan URL
+  const apiBaseUrl = "https://e602-103-19-231-235.ngrok-free.app"; // Sesuaikan URL
   try {
     const response = await axios.get(`${apiBaseUrl}/api/all-stories`, {
       headers: {
@@ -85,7 +85,7 @@ export const fetchAllStories = async () => {
 };
 
 export const fetchStoriesByKeyword = async (keyword) => {
-  const apiBaseUrl = "https://2cda-103-19-231-235.ngrok-free.app"; // Sesuaikan URL
+  const apiBaseUrl = "https://e602-103-19-231-235.ngrok-free.app"; // Sesuaikan URL
   try {
     const response = await fetch(
       `${apiBaseUrl}/api/all-stories?keyword=${encodeURIComponent(keyword)}`,
@@ -117,7 +117,7 @@ export const fetchStoriesByKeyword = async (keyword) => {
 };
 
 export const fetchStoriesByLatest = async () => {
-  const apiBaseUrl = "https://2cda-103-19-231-235.ngrok-free.app"; // Sesuaikan URL
+  const apiBaseUrl = "https://e602-103-19-231-235.ngrok-free.app"; // Sesuaikan URL
   try {
     const response = await axios.get(`${apiBaseUrl}/api/story-index`, {
       headers: {
@@ -149,7 +149,7 @@ export const fetchStoriesByLatest = async () => {
 };
 
 export const fetchStoriesByRomance = async () => {
-  const apiBaseUrl = "https://2cda-103-19-231-235.ngrok-free.app"; // Sesuaikan URL
+  const apiBaseUrl = "https://e602-103-19-231-235.ngrok-free.app"; // Sesuaikan URL
   try {
     const response = await axios.get(`${apiBaseUrl}/api/story-by-category/2`, {
       headers: {
@@ -181,7 +181,7 @@ export const fetchStoriesByRomance = async () => {
 };
 
 export const fetchStoriesByComedy = async () => {
-  const apiBaseUrl = "https://2cda-103-19-231-235.ngrok-free.app"; // Sesuaikan URL
+  const apiBaseUrl = "https://e602-103-19-231-235.ngrok-free.app"; // Sesuaikan URL
   try {
     const response = await axios.get(`${apiBaseUrl}/api/story-by-category/3`, {
       headers: {
@@ -213,7 +213,7 @@ export const fetchStoriesByComedy = async () => {
 };
 
 export const fetchStoriesByHorror = async () => {
-  const apiBaseUrl = "https://2cda-103-19-231-235.ngrok-free.app"; // Sesuaikan URL
+  const apiBaseUrl = "https://e602-103-19-231-235.ngrok-free.app"; // Sesuaikan URL
   try {
     const response = await axios.get(`${apiBaseUrl}/api/story-by-category/1`, {
       headers: {
@@ -246,7 +246,7 @@ export const fetchStoriesByHorror = async () => {
 
 export const fetchSortedStories = async (sortOrder) => {
   const response = await fetch(
-    `https://2cda-103-19-231-235.ngrok-free.app/api/story-sort-by?sort=${sortOrder}`,
+    `https://e602-103-19-231-235.ngrok-free.app/api/story-sort-by?sort=${sortOrder}`,
     {
       method: "GET", // Specify the method
       headers: {
@@ -332,7 +332,7 @@ export const fetchStoriesByCategoryId = async (categoryId, token) => {
 };
 
 export const fetchUserBookmarks = async (userId, token) => {
-  const apiBaseUrl = "https://2cda-103-19-231-235.ngrok-free.app"; // Your API base URL
+  const apiBaseUrl = "https://e602-103-19-231-235.ngrok-free.app"; // Your API base URL
   try {
     const response = await axios.get(`${apiBaseUrl}/api/bookmarks`, {
       headers: {

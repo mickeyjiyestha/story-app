@@ -34,7 +34,7 @@ const props = defineProps({
 const emit = defineEmits();
 
 const updateValue = (event) => {
-  emit("update:modelValue", event.target.value); // Emit event untuk mengupdate nilai
+  emit("update:modelValue", event.target.value);
 };
 </script>
 
@@ -67,16 +67,43 @@ const updateValue = (event) => {
 
 .input-field {
   width: 100%;
-  min-height: 150px; /* Tinggi textarea */
+  min-height: 150px;
   padding: 12px;
   font-size: 16px;
   border: none;
   outline: none;
   box-sizing: border-box;
-  resize: none; /* Nonaktifkan resize */
+  resize: none;
 }
 
 .input-field::placeholder {
   color: #999;
+}
+
+/* Mobile Responsive Styles */
+@media screen and (max-width: 768px) {
+  .toolbar {
+    padding: 8px;
+    overflow-x: auto;
+  }
+
+  .toolbar-button {
+    font-size: 14px;
+    margin-right: 8px;
+    padding: 4px 8px;
+  }
+
+  .input-field {
+    min-height: 120px;
+    font-size: 14px;
+    padding: 10px;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .toolbar-button {
+    font-size: 12px;
+    padding: 3px 6px;
+  }
 }
 </style>
