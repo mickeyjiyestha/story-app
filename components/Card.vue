@@ -109,7 +109,7 @@ const handleBookmark = async () => {
 <style scoped>
 /* Desktop Styles */
 .card-wrapper {
-  width: 320px;
+  width: 500px;
   flex-shrink: 0;
   margin: 0 15px;
 }
@@ -128,8 +128,8 @@ const handleBookmark = async () => {
 
 .image-container {
   position: relative;
-  width: 320px;
-  height: 320px;
+  width: 100%;
+  height: 500px;
   overflow: hidden;
 }
 
@@ -157,7 +157,7 @@ const handleBookmark = async () => {
 
 .card-title {
   margin-bottom: 10px;
-  font-size: 20px;
+  font-size: 25px;
   font-weight: bold;
   color: #333;
   white-space: nowrap;
@@ -206,15 +206,15 @@ const handleBookmark = async () => {
 }
 
 .profile-pic {
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   object-fit: cover;
   flex-shrink: 0;
 }
 
 .username {
-  font-size: 14px;
+  font-size: 20px;
   color: #333;
   font-weight: 600;
   white-space: nowrap;
@@ -223,7 +223,7 @@ const handleBookmark = async () => {
 }
 
 .date {
-  font-size: 12px;
+  font-size: 14px;
   color: #666;
 }
 
@@ -232,14 +232,14 @@ const handleBookmark = async () => {
   color: #466543;
   padding: 6px 12px;
   border-radius: 20px;
-  font-size: 12px;
+  font-size: 20px;
   font-weight: 500;
   white-space: nowrap;
 }
 
 .bookmark-icon {
   position: absolute;
-  bottom: 20px;
+  bottom: 30px;
   right: 20px;
   background-color: rgba(70, 101, 67, 0.9);
   border-radius: 50%;
