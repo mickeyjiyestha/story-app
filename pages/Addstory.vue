@@ -96,7 +96,7 @@ onMounted(async () => {
   console.log("Using token:", authStore.token);
   try {
     const response = await axios.get(
-      "https://e602-103-19-231-235.ngrok-free.app/api/categories",
+      "https://cbdf-103-100-175-121.ngrok-free.app/api/categories",
       {
         headers: {
           Authorization: `Bearer ${authStore.token}`,
@@ -116,7 +116,7 @@ onMounted(async () => {
     storyId.value = storyIdFromRoute;
     try {
       const response = await axios.get(
-        `https://e602-103-19-231-235.ngrok-free.app/api/stories/${storyIdFromRoute}`,
+        `https://cbdf-103-100-175-121.ngrok-free.app/api/stories/${storyIdFromRoute}`,
         {
           headers: {
             "ngrok-skip-browser-warning": "69420",
@@ -134,8 +134,8 @@ onMounted(async () => {
       // Menampilkan gambar yang sudah ada
       images.value = story.images
         ? story.images.map((image) => ({
-            name: image.url
-              ? `https://e602-103-19-231-235.ngrok-free.app${image.url}`
+            url: image.url
+              ? `https://cbdf-103-100-175-121.ngrok-free.app${image.url}`
               : "",
           }))
         : [];
@@ -175,7 +175,7 @@ const uploadStory = async () => {
   formData.append("content", content.value);
   formData.append("category_id", selectedCategory.value.id);
 
-  // Hanya tambahkan gambar yang valid
+  // Hanya tambahkan gambar baru (File) ke FormData
   images.value.forEach((image) => {
     if (image instanceof File) {
       formData.append("images[]", image);
@@ -188,8 +188,8 @@ const uploadStory = async () => {
 
   try {
     const url = isEditMode.value
-      ? `https://e602-103-19-231-235.ngrok-free.app/api/stories/${storyId.value}`
-      : "https://e602-103-19-231-235.ngrok-free.app/api/stories";
+      ? `https://cbdf-103-100-175-121.ngrok-free.app/api/stories/${storyId.value}`
+      : "https://cbdf-103-100-175-121.ngrok-free.app/api/stories";
 
     const response = await axios.post(url, formData, {
       headers: {

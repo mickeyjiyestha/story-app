@@ -265,6 +265,7 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+/* Original Desktop Styles */
 .pagination-container {
   display: flex;
   justify-content: center;
@@ -273,7 +274,7 @@ onMounted(async () => {
 
 .p-sort,
 .p-sort-c {
-  margin: 0 10px; /* Adjust margin for better spacing */
+  margin: 0 10px;
 }
 
 .hero-bg {
@@ -309,13 +310,13 @@ onMounted(async () => {
 }
 
 .search-container {
-  margin-left: auto; /* Push search container to the right */
+  margin-left: auto;
 }
 
 .search-box {
   position: relative;
   width: 100%;
-  max-width: 300px; /* Adjust max-width for search box */
+  max-width: 300px;
 }
 
 .search-input {
@@ -354,5 +355,90 @@ onMounted(async () => {
   font-family: Dm Sans, sans-serif;
   margin: 25px;
   font-size: 25px;
+}
+
+/* Mobile Responsive Styles */
+@media screen and (max-width: 768px) {
+  .d-flex.justify-content-between.align-items-center {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .d-flex.align-items-center {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .search-container {
+    width: 100%;
+    margin: 15px 0;
+  }
+
+  .search-box {
+    max-width: 100%;
+  }
+
+  .hero {
+    margin: 15px;
+  }
+
+  .hero-child,
+  .first-hero-child {
+    font-size: 16px;
+    margin-left: 15px;
+  }
+
+  .p-sort,
+  .p-sort-c {
+    margin: 0 5px;
+    font-size: 16px;
+  }
+
+  .dropdown,
+  .dropdown-category {
+    margin: 5px !important;
+  }
+
+  .dropdown-toggle {
+    font-size: 14px;
+    padding: 8px;
+  }
+
+  .col-md-4.card-container {
+    padding: 0 10px;
+  }
+
+  .card-home {
+    margin-bottom: 20px !important;
+  }
+}
+
+/* Small Mobile Devices */
+@media screen and (max-width: 480px) {
+  .hero-child,
+  .first-hero-child {
+    font-size: 14px;
+    margin-left: 10px;
+  }
+
+  .p-sort,
+  .p-sort-c {
+    font-size: 14px;
+  }
+
+  .dropdown-toggle {
+    font-size: 13px;
+    padding: 6px;
+  }
+
+  .search-input {
+    font-size: 14px;
+    padding: 8px 30px;
+  }
+
+  .pagination-container {
+    margin-top: 15px;
+  }
 }
 </style>

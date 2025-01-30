@@ -148,12 +148,12 @@ const prevImage = () => {
 };
 
 const getImageUrl = (url) => {
-  const apiBaseUrl = "https://e602-103-19-231-235.ngrok-free.app"; // Base URL API
+  const apiBaseUrl = "https://cbdf-103-100-175-121.ngrok-free.app"; // Base URL API
   return `${apiBaseUrl}${url}`;
 };
 
 const fetchStoryDetail = async (id) => {
-  const apiBaseUrl = "https://e602-103-19-231-235.ngrok-free.app"; // Base URL API
+  const apiBaseUrl = "https://cbdf-103-100-175-121.ngrok-free.app"; // Base URL API
 
   try {
     const response = await axios.get(

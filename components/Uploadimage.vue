@@ -18,7 +18,15 @@
     </div>
     <div class="preview-container" v-if="files.length">
       <div v-for="(file, index) in files" :key="index" class="preview-item">
-        <img :src="file.preview" alt="Preview" class="preview-image" />
+        <!-- Tampilkan gambar yang sudah ada dari server -->
+        <img
+          v-if="file.url"
+          :src="file.url"
+          alt="Existing Image"
+          class="preview-image"
+        />
+        <!-- Tampilkan pratinjau gambar baru dari lokal -->
+        <img v-else :src="file.preview" alt="Preview" class="preview-image" />
         <span class="file-name">{{ file.name }}</span>
         <button class="remove-btn" @click="removeFile(index)">Remove</button>
       </div>
@@ -37,7 +45,7 @@ const handleFileChange = (event) => {
   const selectedFiles = Array.from(event.target.files);
 
   const newFiles = selectedFiles.filter(
-    (newFile) => !files.value.some((f) => f.file.name === newFile.name)
+    (newFile) => !files.value.some((f) => f.name === newFile.name)
   );
 
   files.value.push(
@@ -50,7 +58,7 @@ const handleFileChange = (event) => {
 
   emit(
     "update:modelValue",
-    files.value.map((f) => f.file)
+    files.value.map((f) => f.file || f.url) // Kirim file baru atau URL gambar yang sudah ada
   );
 };
 
@@ -62,7 +70,7 @@ const removeFile = (index) => {
   files.value.splice(index, 1);
   emit(
     "update:modelValue",
-    files.value.map((f) => f.file)
+    files.value.map((f) => f.file || f.url)
   );
 };
 </script>
