@@ -17,7 +17,6 @@
       rel="stylesheet"
     />
     <WebHeader></WebHeader>
-
     <div class="hero-bg d-flex p-3">
       <nuxt-link to="/">
         <p class="first-hero-child">Home</p>
@@ -61,7 +60,6 @@
             </ul>
           </div>
         </div>
-
         <div class="search-container">
           <div class="search-box">
             <input
@@ -74,7 +72,6 @@
           </div>
         </div>
       </div>
-
       <div class="container-card mt-5">
         <div class="row container-fluid mt-5">
           <div
@@ -86,8 +83,7 @@
           </div>
         </div>
       </div>
-
-      <!-- Pagination at the bottom -->
+      <!-- Pagination -->
       <div v-if="totalPages > 0" class="pagination-container mt-4">
         <Pagination
           :totalPages="totalPages"
@@ -100,15 +96,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, computed, watch } from "vue";
 import {
   fetchAllStories,
   fetchStoriesByLatest,
   fetchSortedStories,
-  fetchCategories, // Import the new function
+  fetchCategories,
   fetchStoriesByCategoryId,
-} from "~/services/apiService"; // Ensure you have this function
-import { useAuthStore } from "@/stores/authStore"; // Import the auth store
+} from "~/services/apiService";
+import { useAuthStore } from "@/stores/authStore";
 import { useRoute } from "vue-router";
 import Pagination from "@/components/Pagination.vue";
 
@@ -116,36 +112,38 @@ interface Story {
   id: number;
   title: string;
   content: string;
-  category: string;
+  category: { name: string };
+  user: { id: number; avatar: string; username: string };
+  images: { id: number; filename: string; url: string }[];
 }
 
 interface Category {
-  id: number; // Adjust the type based on your API response
-  name: string; // Adjust the type based on your API response
+  id: number;
+  name: string;
 }
 
 const route = useRoute();
-const authStore = useAuthStore(); // Use the auth store
+const authStore = useAuthStore();
 const selectedSort = ref("Newest");
-const selectedCategory = ref("Select Category"); // Default value for the category dropdown
+const selectedCategory = ref("Select Category");
 const isSortDropdownOpen = ref(false);
 const isCategoryDropdownOpen = ref(false);
 const allStories = ref<Story[]>([]);
-const categories = ref<Category[]>([]); // Specify the type for categories
+const categories = ref<Category[]>([]);
 const searchKeyword = ref<string>(
   Array.isArray(route.query.keyword)
     ? route.query.keyword[0] || ""
     : route.query.keyword || ""
 );
-
 const currentPage = ref(1);
-const itemsPerPage = 9;
+const itemsPerPage = 12; // Ubah menjadi 12 sesuai dengan response API
+const totalPages = ref(1);
+const lastPage = ref(1);
 
 // Filter stories based on the search keyword
 const filteredStories = computed(() => {
   const keyword = (searchKeyword.value ?? "").toLowerCase();
-  if (!keyword) return allStories.value; // Return all stories if no keyword
-
+  if (!keyword) return allStories.value;
   return allStories.value.filter((story) => {
     return (
       story.title.toLowerCase().includes(keyword) ||
@@ -155,18 +153,16 @@ const filteredStories = computed(() => {
 });
 
 // Pagination logic
-const totalPages = computed(() => {
-  return Math.ceil(filteredStories.value.length / itemsPerPage);
-});
-
 const paginatedStories = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage;
   const end = start + itemsPerPage;
   return filteredStories.value.slice(start, end);
 });
 
-const changePage = (page: number) => {
+const changePage = async (page: number) => {
+  if (page < 1 || page > lastPage.value) return;
   currentPage.value = page;
+  await loadStories(page);
 };
 
 const toggleSortDropdown = () => {
@@ -183,11 +179,12 @@ const selectSort = async (sortOption: string) => {
 
   if (sortOption === "Newest") {
     try {
-      console.log("Fetching latest stories..."); // Debugging log
-      const latestStories = await fetchStoriesByLatest(); // Call the API for latest stories
-      console.log("Latest Stories:", latestStories); // Debugging log
-      allStories.value = latestStories; // Update allStories with latest data
-      currentPage.value = 1; // Reset to the first page after fetching
+      console.log("Fetching latest stories...");
+      const latestStories = await fetchStoriesByLatest();
+      console.log("Latest Stories:", latestStories);
+      allStories.value = latestStories;
+      currentPage.value = 1;
+      totalPages.value = Math.ceil(latestStories.length / itemsPerPage);
     } catch (error) {
       console.error("Error fetching latest stories:", error);
     }
@@ -198,6 +195,7 @@ const selectSort = async (sortOption: string) => {
       console.log("Sorted Stories:", sortedStories);
       allStories.value = sortedStories;
       currentPage.value = 1;
+      totalPages.value = Math.ceil(sortedStories.length / itemsPerPage);
     } catch (error) {
       console.error("Error fetching sorted stories:", error);
     }
@@ -208,28 +206,27 @@ const selectSort = async (sortOption: string) => {
       console.log("Sorted Stories:", sortedStories);
       allStories.value = sortedStories;
       currentPage.value = 1;
+      totalPages.value = Math.ceil(sortedStories.length / itemsPerPage);
     } catch (error) {
       console.error("Error fetching sorted stories:", error);
     }
-  } else {
-    // Handle other sort options (e.g., Popular) if needed
   }
 };
 
 const selectCategory = async (category: string) => {
-  selectedCategory.value = category; // Set the selected category
-  isCategoryDropdownOpen.value = false; // Close the dropdown
+  selectedCategory.value = category;
+  isCategoryDropdownOpen.value = false;
 
-  const categoryId = categories.value.find((cat) => cat.name === category)?.id; // Get the category ID
-
+  const categoryId = categories.value.find((cat) => cat.name === category)?.id;
   if (categoryId) {
     try {
       const stories = await fetchStoriesByCategoryId(
         categoryId,
         authStore.token
-      ); // Ensure this matches the function definition
-      allStories.value = stories; // Update allStories with fetched stories
-      currentPage.value = 1; // Reset to the first page after fetching
+      );
+      allStories.value = stories;
+      currentPage.value = 1;
+      totalPages.value = Math.ceil(stories.length / itemsPerPage);
     } catch (error) {
       console.error("Error fetching stories by category:", error);
     }
@@ -238,29 +235,47 @@ const selectCategory = async (category: string) => {
   }
 };
 
-// Fetch all stories and categories on mount
+const loadStories = async (page: number) => {
+  try {
+    const storiesData = await fetchAllStories(page);
+    if (storiesData && Array.isArray(storiesData.stories)) {
+      allStories.value = [...allStories.value, ...storiesData.stories];
+      totalPages.value = storiesData.pagination.last_page;
+      lastPage.value = storiesData.pagination.last_page;
+    } else {
+      console.error("No stories found in the response.");
+    }
+  } catch (error) {
+    console.error("Error fetching stories:", error);
+  }
+};
+
 onMounted(async () => {
   try {
-    const storiesData = await fetchAllStories();
-    if (storiesData && Array.isArray(storiesData)) {
-      allStories.value = storiesData; // Ensure this is set correctly
+    const storiesData = await fetchAllStories(currentPage.value);
+    if (storiesData && Array.isArray(storiesData.stories)) {
+      allStories.value = storiesData.stories;
+      totalPages.value = storiesData.pagination.last_page;
+      lastPage.value = storiesData.pagination.last_page;
     } else {
       console.error("No stories found in the response.");
     }
 
-    // Retrieve the token from the auth store
-    const token = authStore.token; // Get the token from the auth store
+    const token = authStore.token;
     if (!token) {
       console.error("No token found. Please log in again.");
-      return; // Exit if no token is found
+      return;
     }
 
-    // Fetch categories
-    const categoriesData = await fetchCategories(token); // Fetch categories with the token
-    categories.value = categoriesData; // Set categories
+    const categoriesData = await fetchCategories(token);
+    categories.value = categoriesData;
   } catch (error) {
     console.error("Error fetching stories or categories:", error);
   }
+});
+
+watch(searchKeyword, () => {
+  currentPage.value = 1;
 });
 </script>
 

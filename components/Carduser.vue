@@ -7,11 +7,13 @@
     <div class="card mt-3" style="cursor: pointer" @click="navigateToStory">
       <div class="image-container position-relative">
         <img
-          :src="getImageUrl(story.images[0].url)"
+          :src="getImageUrl(story.images?.[0]?.url || '/default-image.jpg')"
           class="card-img-top card-image"
           alt="Story Image"
         />
-        <bookmark class="bookmark-icon"></bookmark>
+        <div class="bookmark-icon" @click.stop="handleBookmark">
+          <bookmark :class="{ 'bookmark-icon-black': isBookmarked }"></bookmark>
+        </div>
         <delete
           class="delete-icon"
           @click.stop="deleteStory(story.id)"
@@ -27,7 +29,7 @@
       </div>
       <div class="footer-card d-flex align-items-center">
         <div class="category">
-          <p class="mb-0">{{ story.category.name }}</p>
+          <p class="mb-0">{{ story.category?.name || "Uncategorized" }}</p>
         </div>
         <div class="d-flex align-items-center ml-auto">
           <p class="mb-0 p-date">{{ story.created_at }}</p>
@@ -38,7 +40,6 @@
 </template>
 
 <script setup>
-// Script remains unchanged
 import { defineProps } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/authStore";
@@ -56,15 +57,44 @@ const props = defineProps({
 });
 
 const router = useRouter();
+const authStore = useAuthStore();
 
 const getImageUrl = (url) => {
-  const apiBaseUrl = "https://cbdf-103-100-175-121.ngrok-free.app";
+  if (!url) return "/default-image.jpg";
+  const apiBaseUrl = "https://b39d-103-100-175-121.ngrok-free.app";
   return `${apiBaseUrl}${url}`;
 };
 
 const truncateContent = (content) => {
   if (!content) return "No content available";
   return content.length > 200 ? content.slice(0, 200) + "..." : content;
+};
+
+const handleBookmark = async () => {
+  const apiBaseUrl = "https://b39d-103-100-175-121.ngrok-free.app";
+  const token = authStore.token;
+  const storyId = props.story.id;
+
+  try {
+    const response = await fetch(`${apiBaseUrl}/api/bookmarks/${storyId}`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+        "ngrok-skip-browser-warning": "69420",
+      },
+    });
+
+    if (response.ok) {
+      location.reload();
+    } else {
+      const errorData = await response.json();
+      alert(`Failed to bookmark story: ${errorData.message}`);
+    }
+  } catch (error) {
+    console.error("Error bookmarking story:", error);
+    alert("An error occurred while bookmarking the story.");
+  }
 };
 
 const navigateToStory = () => {
@@ -85,7 +115,7 @@ const deleteStory = async (storyId) => {
     }
 
     const response = await axios.delete(
-      `https://cbdf-103-100-175-121.ngrok-free.app/api/stories/${storyId}`,
+      `https://b39d-103-100-175-121.ngrok-free.app/api/stories/${storyId}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,

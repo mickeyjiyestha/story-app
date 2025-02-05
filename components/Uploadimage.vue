@@ -18,15 +18,11 @@
     </div>
     <div class="preview-container" v-if="files.length">
       <div v-for="(file, index) in files" :key="index" class="preview-item">
-        <!-- Tampilkan gambar yang sudah ada dari server -->
         <img
-          v-if="file.url"
-          :src="file.url"
-          alt="Existing Image"
+          :src="getPreviewUrl(file)"
+          :alt="file.name"
           class="preview-image"
         />
-        <!-- Tampilkan pratinjau gambar baru dari lokal -->
-        <img v-else :src="file.preview" alt="Preview" class="preview-image" />
         <span class="file-name">{{ file.name }}</span>
         <button class="remove-btn" @click="removeFile(index)">Remove</button>
       </div>
@@ -35,31 +31,76 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, watch, onBeforeUnmount } from "vue";
 
-const emit = defineEmits(["update:modelValue"]);
+const props = defineProps({
+  modelValue: {
+    type: Array,
+    default: () => [],
+  },
+});
+
+const emit = defineEmits(["update:modelValue", "imageDeleted"]);
 const fileInput = ref(null);
 const files = ref([]);
+
+// Watch untuk menangani nilai awal dan perubahan dari parent
+watch(
+  () => props.modelValue,
+  (newValue) => {
+    if (newValue && Array.isArray(newValue) && files.value.length === 0) {
+      files.value = newValue.map((file) => {
+        if (typeof file === "string") {
+          return {
+            url: file,
+            name: file.split("/").pop() || "Image",
+            isExisting: true,
+          };
+        } else if (file.url) {
+          return {
+            url: file.url,
+            name: file.url.split("/").pop() || "Image",
+            isExisting: true,
+            id: file.id, // Menyimpan ID gambar
+          };
+        }
+        return {
+          file,
+          preview: URL.createObjectURL(file),
+          name: file.name,
+          isNew: true,
+        };
+      });
+    }
+  },
+  { immediate: true }
+);
 
 const handleFileChange = (event) => {
   const selectedFiles = Array.from(event.target.files);
 
-  const newFiles = selectedFiles.filter(
-    (newFile) => !files.value.some((f) => f.name === newFile.name)
-  );
+  selectedFiles.forEach((file) => {
+    const isDuplicate = files.value.some((f) => f.name === file.name);
+    if (!isDuplicate) {
+      const preview = URL.createObjectURL(file);
+      files.value.push({
+        file,
+        preview,
+        name: file.name,
+        isNew: true,
+      });
+    }
+  });
 
-  files.value.push(
-    ...newFiles.map((file) => ({
-      file,
-      preview: URL.createObjectURL(file),
-      name: file.name,
-    }))
-  );
+  event.target.value = "";
+  updateModelValue();
+};
 
-  emit(
-    "update:modelValue",
-    files.value.map((f) => f.file || f.url) // Kirim file baru atau URL gambar yang sudah ada
-  );
+const getPreviewUrl = (file) => {
+  if (file.isExisting) {
+    return file.url;
+  }
+  return file.preview;
 };
 
 const triggerFileInput = () => {
@@ -67,12 +108,41 @@ const triggerFileInput = () => {
 };
 
 const removeFile = (index) => {
+  const file = files.value[index];
+
+  // Jika file yang dihapus adalah file yang sudah ada (memiliki ID)
+  if (file.isExisting && file.id) {
+    emit("imageDeleted", file.id);
+  }
+
+  if (file.preview) {
+    URL.revokeObjectURL(file.preview);
+  }
+
   files.value.splice(index, 1);
-  emit(
-    "update:modelValue",
-    files.value.map((f) => f.file || f.url)
-  );
+  updateModelValue();
 };
+
+const updateModelValue = () => {
+  const value = files.value.map((f) => {
+    if (f.isExisting) {
+      return {
+        url: f.url,
+        id: f.id,
+      };
+    }
+    return f.file;
+  });
+  emit("update:modelValue", value);
+};
+
+onBeforeUnmount(() => {
+  files.value.forEach((file) => {
+    if (file.preview) {
+      URL.revokeObjectURL(file.preview);
+    }
+  });
+});
 </script>
 
 <style scoped>

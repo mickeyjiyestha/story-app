@@ -173,12 +173,27 @@
         <hr class="custom-hr" />
       </div>
       <div class="d-flex container-category">
-        <Buttoncategory class="btn-category"></Buttoncategory>
-        <Buttoncategory class="btn-category"></Buttoncategory>
-        <Buttoncategory class="btn-category"></Buttoncategory>
-        <Buttoncategory class="btn-category"></Buttoncategory>
-        <Buttoncategory class="btn-category"></Buttoncategory>
-        <Buttoncategory class="btn-category"></Buttoncategory>
+        <Buttoncategory
+          class="btn-category"
+          :label="'Adventure'"
+        ></Buttoncategory>
+        <Buttoncategory
+          class="btn-category"
+          :label="'Fiction'"
+        ></Buttoncategory>
+        <Buttoncategory
+          class="btn-category"
+          :label="'Fantasy'"
+        ></Buttoncategory>
+        <Buttoncategory class="btn-category" :label="'Drama'"></Buttoncategory>
+        <Buttoncategory
+          class="btn-category"
+          :label="'Heartfelt'"
+        ></Buttoncategory>
+        <Buttoncategory
+          class="btn-category"
+          :label="'Mystery'"
+        ></Buttoncategory>
       </div>
       <hr />
       <div class="footer-content d-flex p-3 justify-content-between">

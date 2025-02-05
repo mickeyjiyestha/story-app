@@ -148,12 +148,12 @@ const prevImage = () => {
 };
 
 const getImageUrl = (url) => {
-  const apiBaseUrl = "https://cbdf-103-100-175-121.ngrok-free.app"; // Base URL API
+  const apiBaseUrl = "https://b39d-103-100-175-121.ngrok-free.app"; // Base URL API
   return `${apiBaseUrl}${url}`;
 };
 
 const fetchStoryDetail = async (id) => {
-  const apiBaseUrl = "https://cbdf-103-100-175-121.ngrok-free.app"; // Base URL API
+  const apiBaseUrl = "https://b39d-103-100-175-121.ngrok-free.app"; // Base URL API
 
   try {
     const response = await axios.get(
@@ -214,7 +214,7 @@ watch(
 </script>
 
 <style scoped>
-/* Desktop Styles */
+/* Desktop Styles - Unchanged */
 .custom-hr {
   width: 90%;
   margin: 20px auto;
@@ -440,7 +440,7 @@ watch(
   height: 24px;
 }
 
-/* Media Queries untuk Mobile */
+/* Mobile Responsive Styles */
 @media screen and (max-width: 768px) {
   .hero {
     padding: 10px 20px;
@@ -449,6 +449,15 @@ watch(
   .hero-child {
     margin-left: 15px;
     font-size: 16px;
+  }
+
+  .container-bookmark {
+    padding: 0 15px;
+  }
+
+  .bookmark-icon {
+    right: 15px;
+    padding: 6px;
   }
 
   .story-title {
@@ -509,8 +518,12 @@ watch(
   }
 }
 
-/* Untuk layar yang sangat kecil */
 @media screen and (max-width: 480px) {
+  .bookmark-icon {
+    padding: 5px;
+    right: 10px;
+  }
+
   .story-title {
     font-size: 24px;
   }

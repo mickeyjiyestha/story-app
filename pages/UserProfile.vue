@@ -262,6 +262,12 @@ const addStory = () => {
   router.push("/addstory");
 };
 
+const loadUserStories = async () => {
+  isBookmarkView.value = false; // Set view ke stories
+  currentPage.value = 1; // Reset ke halaman pertama
+  await loadStories(currentPage.value);
+};
+
 // Function to trigger file input for changing profile picture
 const triggerFileInput = () => {
   const fileInput = document.getElementById("profile-pic-upload-modal");
@@ -414,44 +420,43 @@ const loadStories = async (page) => {
   }
 };
 
-// Function to load bookmarks
 const loadBookmarks = async () => {
-  const userId = authStore.user?.id; // Ensure user ID is available
-  const token = authStore.token; // Get the token from the auth store
+  const userId = authStore.user?.id;
+  const token = authStore.token;
   const config = useRuntimeConfig();
-  const apiBaseUrl = config.public.apiBaseUrl; // Get the public API base URL
+  const apiBaseUrl = config.public.apiBaseUrl;
 
   try {
-    const response = await fetchUserBookmarks(userId, token); // Fetch bookmarks
-    console.log("Bookmarks Response:", response); // Log the response
+    const response = await fetchUserBookmarks(userId, token);
+    console.log("Bookmarks Response:", response);
 
-    // Check if the response contains the expected structure
     if (response && response.data && Array.isArray(response.data.stories)) {
-      bookmarks.value = response.data.stories; // Update bookmarks with new data
-      isBookmarkView.value = true; // Set the view to bookmarks
+      bookmarks.value = response.data.stories;
+      isBookmarkView.value = true; // Set view ke bookmarks
     } else {
       console.error("No bookmarks found in response.");
+      bookmarks.value = []; // Set empty array if no bookmarks
     }
   } catch (error) {
     console.error(
       "Error loading bookmarks:",
       error?.response?.data || error.message
     );
+    bookmarks.value = []; // Set empty array on error
   }
 };
 
 onMounted(async () => {
-  authStore.loadToken(); // Pastikan token sudah dimuat
+  authStore.loadToken();
 
   if (authStore.isAuthenticated) {
-    const userId = authStore.user?.id; // Gunakan properti id
-    console.log("User ID:", userId); // Log ID pengguna
+    const userId = authStore.user?.id;
+    console.log("User ID:", userId);
     if (userId) {
       const config = useRuntimeConfig();
-      const apiBaseUrl = config.public.apiBaseUrl; // Ambil base URL API
+      const apiBaseUrl = config.public.apiBaseUrl;
 
       try {
-        // Ambil data pengguna
         const userResponse = await fetchUserData(
           userId,
           authStore.token,
@@ -465,13 +470,11 @@ onMounted(async () => {
           about.value =
             userResponse.data.user.about || "No description available.";
           avatar.value =
-            userResponse.data.user.avatar || "/path/to/default-avatar.jpg"; // Gambar default
-        } else {
-          console.error("User data not found in response.");
+            userResponse.data.user.avatar || "/path/to/default-avatar.jpg";
         }
 
-        // Load stories for page 1 on initial load
-        await loadStories(currentPage.value);
+        // Load stories by default
+        await loadUserStories(); // Gunakan loadUserStories sebagai default view
       } catch (error) {
         console.error(
           "Error fetching user data or stories:",
@@ -483,7 +486,7 @@ onMounted(async () => {
     }
   } else {
     console.error("User is not authenticated. Redirecting to login.");
-    router.push("/login"); // Redirect to login if not authenticated
+    router.push("/login");
   }
 });
 </script>

@@ -7,7 +7,7 @@
     <div class="card" style="cursor: pointer" @click="navigateToStory">
       <div class="image-container position-relative">
         <img
-          :src="getImageUrl(story.images[0].url)"
+          :src="getImageUrl(story.images[0]?.url)"
           class="card-img-top card-image"
           alt="Story Image"
         />
@@ -63,7 +63,7 @@ const props = defineProps({
 });
 
 const getImageUrl = (url) => {
-  const apiBaseUrl = "https://cbdf-103-100-175-121.ngrok-free.app";
+  const apiBaseUrl = "https://b39d-103-100-175-121.ngrok-free.app";
   return `${apiBaseUrl}${url}`;
 };
 
@@ -80,7 +80,7 @@ const navigateToStory = () => {
 };
 
 const handleBookmark = async () => {
-  const apiBaseUrl = "https://cbdf-103-100-175-121.ngrok-free.app";
+  const apiBaseUrl = "https://b39d-103-100-175-121.ngrok-free.app";
   const token = authStore.token;
   const storyId = props.story.id;
 
@@ -90,6 +90,7 @@ const handleBookmark = async () => {
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
+        "ngrok-skip-browser-warning": "69420",
       },
     });
 

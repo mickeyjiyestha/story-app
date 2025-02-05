@@ -14,7 +14,7 @@
   font-size: 16px;
   margin: 4px 2px;
   cursor: pointer;
-  font-size: 20px;
+  font-size: 30px;
 }
 </style>
 

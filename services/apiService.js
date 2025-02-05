@@ -1,9 +1,10 @@
 import axios from "axios";
 
 const apiClient = axios.create({
-  baseURL: "https://cbdf-103-100-175-121.ngrok-free.app/api",
+  baseURL: "https://b39d-103-100-175-121.ngrok-free.app/api",
   headers: {
     "Content-Type": "application/json",
+    "ngrok-skip-browser-warning": "69420",
   },
 });
 
@@ -52,16 +53,10 @@ export const fetchUserStories = async (userId, token, apiBaseUrl, page = 1) => {
   return response.data;
 };
 
-export const fetchAllStories = async () => {
-  const apiBaseUrl = "https://cbdf-103-100-175-121.ngrok-free.app"; // Sesuaikan URL
+export const fetchAllStories = async (page = 1) => {
   try {
-    const response = await axios.get(`${apiBaseUrl}/api/all-stories`, {
-      headers: {
-        "ngrok-skip-browser-warning": "69420",
-      },
-    });
-
-    console.log("Raw API Response:", response);
+    const response = await apiClient.get(`/all-stories?page=${page}`);
+    console.log(`Raw API Response for page ${page}:`, response);
 
     // Validasi jika data tersedia dan tidak kosong
     if (
@@ -72,44 +67,47 @@ export const fetchAllStories = async () => {
       Array.isArray(response.data.data.stories) && // Pastikan stories adalah array
       response.data.data.stories.length > 0
     ) {
-      console.log("Valid Stories:", response.data.data.stories);
-      return response.data.data.stories; // Kembalikan data cerita
+      console.log(
+        `Valid Stories for page ${page}:`,
+        response.data.data.stories
+      );
+      return response.data.data; // Kembalikan seluruh data termasuk pagination
     } else {
-      console.log("No stories found in the response.");
-      return []; // Kembalikan array kosong jika tidak ada cerita
+      console.log(`No stories found in the response for page ${page}.`);
+      return {
+        stories: [],
+        pagination: {
+          total: 0,
+          per_page: 0,
+          current_page: 1,
+          last_page: 1,
+          next_page_url: null,
+          prev_page_url: null,
+        },
+      }; // Kembalikan struktur data default
     }
   } catch (error) {
-    console.error("Error fetching stories:", error);
+    console.error(`Error fetching stories for page ${page}:`, error);
     throw error; // Lempar error untuk debugging lebih lanjut
   }
 };
 
 export const fetchStoriesByKeyword = async (keyword) => {
-  const apiBaseUrl = "https://cbdf-103-100-175-121.ngrok-free.app"; // Sesuaikan URL
   try {
-    const response = await fetch(
-      `${apiBaseUrl}/api/all-stories?keyword=${encodeURIComponent(keyword)}`,
-      {
-        method: "GET",
-        headers: {
-          "ngrok-skip-browser-warning": "69420", // Add custom header here
-        },
-      }
+    const response = await apiClient.get(
+      `/all-stories?keyword=${encodeURIComponent(keyword)}`
     );
 
-    // Parse the JSON response
-    const responseData = await response.json();
-
     // Log the parsed JSON response
-    console.log("Parsed API Response:", responseData);
+    console.log("Parsed API Response:", response.data);
 
     // Check if the response is okay
-    if (!response.ok) {
+    if (response.status !== 200) {
       throw new Error("Network response was not ok");
     }
 
     // Return the parsed JSON
-    return responseData;
+    return response.data;
   } catch (error) {
     console.error("Error fetching stories by keyword:", error);
     throw error;
@@ -117,14 +115,8 @@ export const fetchStoriesByKeyword = async (keyword) => {
 };
 
 export const fetchStoriesByLatest = async () => {
-  const apiBaseUrl = "https://cbdf-103-100-175-121.ngrok-free.app"; // Sesuaikan URL
   try {
-    const response = await axios.get(`${apiBaseUrl}/api/story-index`, {
-      headers: {
-        "ngrok-skip-browser-warning": "69420",
-      },
-    });
-
+    const response = await apiClient.get("/story-index");
     console.log("Raw API Response:", response);
 
     // Validasi jika data tersedia dan tidak kosong
@@ -149,14 +141,8 @@ export const fetchStoriesByLatest = async () => {
 };
 
 export const fetchStoriesByRomance = async () => {
-  const apiBaseUrl = "https://cbdf-103-100-175-121.ngrok-free.app"; // Sesuaikan URL
   try {
-    const response = await axios.get(`${apiBaseUrl}/api/story-by-category/2`, {
-      headers: {
-        "ngrok-skip-browser-warning": "69420",
-      },
-    });
-
+    const response = await apiClient.get("/story-by-category/3");
     console.log("Raw API Response:", response);
 
     // Validasi jika data tersedia dan tidak kosong
@@ -181,14 +167,8 @@ export const fetchStoriesByRomance = async () => {
 };
 
 export const fetchStoriesByComedy = async () => {
-  const apiBaseUrl = "https://cbdf-103-100-175-121.ngrok-free.app"; // Sesuaikan URL
   try {
-    const response = await axios.get(`${apiBaseUrl}/api/story-by-category/3`, {
-      headers: {
-        "ngrok-skip-browser-warning": "69420",
-      },
-    });
-
+    const response = await apiClient.get("/story-by-category/2");
     console.log("Raw API Response:", response);
 
     // Validasi jika data tersedia dan tidak kosong
@@ -204,7 +184,7 @@ export const fetchStoriesByComedy = async () => {
       return response.data.data.stories; // Kembalikan data cerita
     } else {
       console.log("No stories found in the response.");
-      return []; // Kembalikan array kosong jika tidak ada ceritaP
+      return []; // Kembalikan array kosong jika tidak ada cerita
     }
   } catch (error) {
     console.error("Error fetching stories:", error);
@@ -213,14 +193,8 @@ export const fetchStoriesByComedy = async () => {
 };
 
 export const fetchStoriesByHorror = async () => {
-  const apiBaseUrl = "https://cbdf-103-100-175-121.ngrok-free.app"; // Sesuaikan URL
   try {
-    const response = await axios.get(`${apiBaseUrl}/api/story-by-category/1`, {
-      headers: {
-        "ngrok-skip-browser-warning": "69420",
-      },
-    });
-
+    const response = await apiClient.get("/story-by-category/1");
     console.log("Raw API Response:", response);
 
     // Validasi jika data tersedia dan tidak kosong
@@ -245,28 +219,29 @@ export const fetchStoriesByHorror = async () => {
 };
 
 export const fetchSortedStories = async (sortOrder) => {
-  const response = await fetch(
-    `https://cbdf-103-100-175-121.ngrok-free.app/api/story-sort-by?sort=${sortOrder}`,
-    {
-      method: "GET", // Specify the method
-      headers: {
-        "ngrok-skip-browser-warning": "69420", // Add your custom header here
-        "Content-Type": "application/json", // Optional: specify content type
-      },
-    }
-  );
-
-  // Log the response for debugging
-  const text = await response.text(); // Get the response as text
-  console.log("Response Text:", text); // Log the response text
-
-  // Try to parse the response as JSON
   try {
-    const data = JSON.parse(text); // Parse the text as JSON
-    return data.data.stories; // Adjust based on your API response structure
+    const response = await apiClient.get(`/story-sort-by?sort=${sortOrder}`);
+
+    // Log the response for debugging
+    console.log("Raw API Response:", response);
+
+    // Validasi jika data tersedia dan tidak kosong
+    if (
+      response.status === 200 &&
+      response.data &&
+      response.data.data && // Pastikan data ada
+      response.data.data.stories && // Periksa ada stories
+      Array.isArray(response.data.data.stories) // Pastikan stories adalah array
+    ) {
+      console.log("Sorted Stories:", response.data.data.stories);
+      return response.data.data.stories; // Kembalikan data cerita
+    } else {
+      console.log("No stories found in the response.");
+      return []; // Kembalikan array kosong jika tidak ada cerita
+    }
   } catch (error) {
-    console.error("Error parsing JSON:", error);
-    throw new Error("Failed to parse JSON response");
+    console.error("Error fetching sorted stories:", error);
+    throw error; // Lempar error untuk debugging lebih lanjut
   }
 };
 
@@ -332,16 +307,20 @@ export const fetchStoriesByCategoryId = async (categoryId, token) => {
 };
 
 export const fetchUserBookmarks = async (userId, token) => {
-  const apiBaseUrl = "https://cbdf-103-100-175-121.ngrok-free.app"; // Your API base URL
   try {
-    const response = await axios.get(`${apiBaseUrl}/api/bookmarks`, {
+    const response = await apiClient.get("/bookmarks", {
       headers: {
-        "ngrok-skip-browser-warning": "69420", // Include your custom header
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${token}`, // Tambahkan token ke header
       },
     });
-    return response.data; // Return the data from the response
+
+    // Log the response for debugging
+    console.log("Raw API Response:", response);
+
+    // Kembalikan data dari respons
+    return response.data;
   } catch (error) {
-    throw error; // Rethrow the error for handling in the component
+    console.error("Error fetching user bookmarks:", error);
+    throw error; // Lempar error untuk penanganan lebih lanjut di komponen
   }
 };

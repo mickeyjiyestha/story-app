@@ -46,20 +46,10 @@
 
     <div class="container-upload container-feild">
       <label for="image">Additional Image</label>
-      <Uploadimage v-model="images"></Uploadimage>
-      <div v-if="isEditMode && images.length">
-        <h3>Uploaded Images:</h3>
-        <div
-          v-for="(image, index) in images"
-          :key="index"
-          class="image-container"
-        >
-          <img :src="image.name" alt="Uploaded Image" class="uploaded-image" />
-          <button @click="removeImage(index)" class="remove-button">
-            Remove
-          </button>
-        </div>
-      </div>
+      <Uploadimage
+        v-model="images"
+        @imageDeleted="handleImageDeleted"
+      ></Uploadimage>
     </div>
     <div class="d-flex mt-5 container-button">
       <div class="container-cancel">
@@ -91,12 +81,13 @@ const content = ref("");
 const images = ref([]);
 const isEditMode = ref(false);
 const storyId = ref(null);
+const deletedImageIds = ref([]); // Menyimpan ID gambar yang dihapus
 
 onMounted(async () => {
   console.log("Using token:", authStore.token);
   try {
     const response = await axios.get(
-      "https://cbdf-103-100-175-121.ngrok-free.app/api/categories",
+      "https://b39d-103-100-175-121.ngrok-free.app/api/categories",
       {
         headers: {
           Authorization: `Bearer ${authStore.token}`,
@@ -116,7 +107,7 @@ onMounted(async () => {
     storyId.value = storyIdFromRoute;
     try {
       const response = await axios.get(
-        `https://cbdf-103-100-175-121.ngrok-free.app/api/stories/${storyIdFromRoute}`,
+        `https://b39d-103-100-175-121.ngrok-free.app/api/stories/${storyIdFromRoute}`,
         {
           headers: {
             "ngrok-skip-browser-warning": "69420",
@@ -135,8 +126,9 @@ onMounted(async () => {
       images.value = story.images
         ? story.images.map((image) => ({
             url: image.url
-              ? `https://cbdf-103-100-175-121.ngrok-free.app${image.url}`
+              ? `https://b39d-103-100-175-121.ngrok-free.app${image.url}`
               : "",
+            id: image.id, // Menyimpan ID gambar
           }))
         : [];
     } catch (error) {
@@ -148,6 +140,14 @@ onMounted(async () => {
     }
   }
 });
+
+const handleImageDeleted = (imageId) => {
+  console.log("Image deleted with ID:", imageId); // Tambahkan log untuk memastikan ID diterima
+  if (!deletedImageIds.value.includes(imageId)) {
+    deletedImageIds.value.push(imageId);
+  }
+  console.log("Current deletedImageIds:", deletedImageIds.value); // Log array ID yang akan dihapus
+};
 
 const selectCategory = (category) => {
   selectedCategory.value = category;
@@ -182,15 +182,31 @@ const uploadStory = async () => {
     }
   });
 
+  // Jika dalam mode edit dan ada gambar yang dihapus
   if (isEditMode.value) {
     formData.append("_method", "PUT");
+
+    // Log sebelum menambahkan ke FormData
+    console.log("Deleted image IDs before append:", deletedImageIds.value);
+
+    // Menambahkan ID gambar yang dihapus sebagai delete_image[]
+    deletedImageIds.value.forEach((id) => {
+      formData.append("delete_images[]", id.toString());
+      console.log("Appending delete_images[]:", id); // Log setiap ID yang ditambahkan
+    });
+
+    // Log FormData untuk memastikan data terkirim dengan benar
+    for (let pair of formData.entries()) {
+      console.log(pair[0], pair[1]);
+    }
   }
 
   try {
     const url = isEditMode.value
-      ? `https://cbdf-103-100-175-121.ngrok-free.app/api/stories/${storyId.value}`
-      : "https://cbdf-103-100-175-121.ngrok-free.app/api/stories";
+      ? `https://b39d-103-100-175-121.ngrok-free.app/api/stories/${storyId.value}`
+      : "https://b39d-103-100-175-121.ngrok-free.app/api/stories";
 
+    console.log("Sending request to:", url);
     const response = await axios.post(url, formData, {
       headers: {
         "Content-Type": "multipart/form-data",
@@ -215,11 +231,6 @@ const uploadStory = async () => {
       alert(`Failed to upload story: ${error.message}`);
     }
   }
-};
-
-// Fungsi untuk menghapus gambar
-const removeImage = (index) => {
-  images.value.splice(index, 1);
 };
 </script>
 

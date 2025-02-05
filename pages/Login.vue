@@ -95,10 +95,11 @@ const loginUser = async () => {
 
     console.log("Login Response:", response.data);
 
-    const token = response.data.data.token;
+    const token = response.data.data.token.plainTextToken;
     const user = response.data.data.user;
 
     console.log("User Data:", user);
+    console.log("Token:", token);
 
     authStore.setToken(token);
     authStore.setUser(user);
