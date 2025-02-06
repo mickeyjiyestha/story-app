@@ -1,4 +1,14 @@
 <template>
+  <div class="toast-container">
+    <div
+      v-for="(toast, index) in toasts"
+      :key="index"
+      :class="['toast', `toast-${toast.type}`, { show: toast.show }]"
+      @click="removeToast(index)"
+    >
+      {{ toast.message }}
+    </div>
+  </div>
   <!-- Template remains unchanged -->
   <div>
     <link
@@ -103,7 +113,6 @@
       />
     </div>
 
-    <!-- Modal for Edit Profile -->
     <div
       class="modal fade"
       id="editProfileModal"
@@ -125,14 +134,16 @@
             </button>
           </div>
           <div class="modal-body d-flex" style="min-height: 600px">
-            <div class="w-100">
-              <div class="container-title">
+            <!-- Left side - Profile Edit -->
+            <div class="w-100 pe-5">
+              <!-- Increased right padding -->
+              <div class="container-title mb-4">
                 <h1 class="modal-title" id="editProfileModalLabel">
                   Edit Profile
                 </h1>
               </div>
-              <div class="d-flex">
-                <div class="profile-modal">
+              <div class="d-flex align-items-center mb-4">
+                <div class="profile-modal me-3">
                   <img
                     id="profile-pic-modal"
                     :src="avatar"
@@ -153,30 +164,32 @@
                   @change="updateProfilePicture"
                 />
               </div>
-              <div class="mt-4 container-left">
-                <label for="name" class="">Name</label>
+              <div class="form-group mb-4">
+                <label for="name" class="form-label mb-2">Name</label>
                 <input-box
                   v-model="name"
                   :placeholder="user?.name || 'Guest'"
                 ></input-box>
               </div>
-              <div class="mt-4 container-left">
-                <label for="email">Email</label>
+              <div class="form-group mb-4">
+                <label for="email" class="form-label mb-2">Email</label>
                 <input-box
                   v-model="email"
                   :value="user?.email || 'No email available'"
                   disabled
                 ></input-box>
               </div>
-              <div class="mt-4 container-left">
-                <label for="description" class="">Description</label>
+              <div class="form-group mb-4">
+                <label for="description" class="form-label mb-2"
+                  >Description</label
+                >
                 <input-box
                   v-model="about"
                   :placeholder="user?.about || 'No description available'"
                 ></input-box>
               </div>
-              <div class="d-flex mt-5">
-                <div class="container-cancel">
+              <div class="d-flex mt-4">
+                <div class="container-cancel me-3">
                   <Buttonfull
                     :buttonText="'Cancel'"
                     @click="closeModal"
@@ -184,32 +197,41 @@
                 </div>
                 <div>
                   <Buttonfull
-                    :buttonText="'Update Profile'"
-                    @click="updateProfile"
+                    :buttonText="'Update'"
+                    @click="handleUpdate"
                   ></Buttonfull>
                 </div>
               </div>
             </div>
-            <div class="w-100">
-              <div class="container-right">
+
+            <!-- Right side - Password Change -->
+            <div class="w-100 ps-5 section-divider">
+              <!-- Removed border-start class -->
+              <div class="container-right mb-4">
                 <h1>Change password</h1>
               </div>
-              <div class="mt-4">
-                <label for="password">Old Password</label>
+              <div class="form-group mb-4">
+                <label for="password" class="form-label mb-2"
+                  >Old Password</label
+                >
                 <input-box
                   v-model="password"
                   placeholder="Enter your old password"
                 ></input-box>
               </div>
-              <div class="mt-4">
-                <label for="password">New Password</label>
+              <div class="form-group mb-4">
+                <label for="newPassword" class="form-label mb-2"
+                  >New Password</label
+                >
                 <input-box
                   v-model="newPassword"
                   placeholder="Enter your new password"
                 ></input-box>
               </div>
-              <div class="mt-4">
-                <label for="password">Confirm New Password</label>
+              <div class="form-group mb-4">
+                <label for="confirmPassword" class="form-label mb-2"
+                  >Confirm New Password</label
+                >
                 <input-box
                   v-model="confirm_password"
                   placeholder="Enter your new password"
@@ -227,6 +249,7 @@
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/authStore";
+import { useToast } from "vue-toastification";
 import axios from "axios";
 import {
   fetchUserData,
@@ -235,9 +258,29 @@ import {
   fetchUserBookmarks, // Import the function to fetch bookmarks
 } from "@/services/apiService";
 
+const toasts = ref([]);
+const showToast = (message, type = "success") => {
+  const toast = {
+    message,
+    type,
+    show: true,
+  };
+  toasts.value.push(toast);
+
+  // Auto remove toast after 3 seconds
+  setTimeout(() => {
+    removeToast(toasts.value.indexOf(toast));
+  }, 3000);
+};
+
+const removeToast = (index) => {
+  toasts.value.splice(index, 1);
+};
+
 const router = useRouter();
 const authStore = useAuthStore();
 const user = authStore.user;
+const toast = useToast(); // Gunakan vue-toastification
 
 const name = ref("");
 const email = ref("");
@@ -327,7 +370,6 @@ const closeModal = () => {
   }
 };
 
-// Function to update user profile
 const updateProfile = async () => {
   console.log("Updating profile", {
     name: name.value,
@@ -377,6 +419,119 @@ const updateProfile = async () => {
       error.response?.data || error.message
     );
   }
+};
+
+const handlePasswordUpdate = async () => {
+  const countdown = ref(3);
+  let toastId = null;
+
+  const startCountdown = () => {
+    // Create initial toast and store its ID
+    toastId = toast.info(
+      `Password updated successfully! You will be logged out in ${countdown.value}`,
+      {
+        timeout: false, // Disable auto-close
+        closeOnClick: false,
+        closeButton: false,
+        draggable: false,
+        id: "logout-countdown", // Add a unique ID to identify this toast
+      }
+    );
+
+    const countdownInterval = setInterval(() => {
+      countdown.value--;
+      if (countdown.value > 0) {
+        // Update existing toast content
+        toast.update(toastId, {
+          content: `Password updated successfully! You will be logged out in ${countdown.value}`,
+        });
+      } else {
+        clearInterval(countdownInterval);
+        toast.dismiss(toastId); // Remove the toast
+        authStore.logout();
+        router.push("/login");
+      }
+    }, 1000);
+  };
+
+  try {
+    const userId = user.id;
+    const token = authStore.token;
+    const config = useRuntimeConfig();
+    const apiBaseUrl = config.public.apiBaseUrl;
+
+    const response = await axios.put(
+      `${apiBaseUrl}/api/update-password/${userId}`,
+      {
+        old_password: password.value,
+        new_password: newPassword.value,
+        new_password_confirmation: confirm_password.value,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    password.value = "";
+    newPassword.value = "";
+    confirm_password.value = "";
+    closeModal();
+
+    startCountdown();
+  } catch (error) {
+    toast.error(error.response?.data?.message || "Failed to update password");
+    console.error("Error updating password:", error);
+  }
+};
+
+const handleUpdate = async () => {
+  let hasProfileChanges =
+    name.value !== user.name ||
+    about.value !== user.about ||
+    avatar.value !== user.avatar; // Tambahkan pengecekan perubahan avatar
+
+  let hasPasswordChanges =
+    password.value && newPassword.value && confirm_password.value;
+
+  if (!hasProfileChanges && !hasPasswordChanges) {
+    toast.info("No changes to update");
+    return;
+  }
+
+  if (hasProfileChanges) {
+    try {
+      await updateProfile();
+      toast.success("Profile updated successfully");
+    } catch (error) {
+      toast.error("Failed to update profile");
+      console.error("Error updating profile:", error);
+      return;
+    }
+  }
+
+  if (hasPasswordChanges) {
+    if (validatePassword()) {
+      await handlePasswordUpdate();
+    }
+  } else if (hasProfileChanges) {
+    closeModal();
+  }
+};
+
+const validatePassword = () => {
+  if (newPassword.value !== confirm_password.value) {
+    toast.error("New password and confirm password do not match");
+    return false;
+  }
+
+  if (newPassword.value.length < 6) {
+    toast.error("New password must be at least 6 characters long");
+    return false;
+  }
+
+  return true;
 };
 
 const handleDeleteStory = (storyId) => {
@@ -492,7 +647,48 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-/* Desktop styles remain unchanged */
+.modal-content {
+  padding: 2rem;
+}
+
+.form-label {
+  font-weight: 500;
+  color: #333;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.section-divider {
+  position: relative;
+  margin-left: 2rem; /* Add margin to create more space */
+}
+
+.border-start {
+  border-left: 1px solid #dee2e6;
+}
+
+.close {
+  position: absolute;
+  right: 1.5rem;
+  top: 1.5rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #666;
+  background: none;
+  border: none;
+  padding: 0.5rem;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.close:hover {
+  color: #333;
+}
+
 .pagination-container {
   display: flex;
   margin-left: 1120px;
@@ -523,6 +719,14 @@ onMounted(async () => {
 
 .container-right {
   margin-top: 60px;
+}
+
+.container-title h1,
+.container-right h1 {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 1.5rem;
 }
 
 .container-title {
@@ -675,10 +879,10 @@ onMounted(async () => {
 }
 
 .profile-pic {
-  width: 200px;
-  height: 200px;
+  width: 100px;
+  height: 100px;
   border-radius: 50%;
-  margin-right: 10px;
+  object-fit: cover;
 }
 
 /* Tablet Responsive Styles */
@@ -708,6 +912,41 @@ onMounted(async () => {
   .modal-dialog {
     max-width: 90%;
   }
+}
+
+.toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+}
+
+.toast {
+  padding: 15px 25px;
+  margin-bottom: 10px;
+  border-radius: 4px;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  opacity: 0;
+  transform: translateX(100%);
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.toast-success {
+  background-color: #466543;
+}
+
+.toast-error {
+  background-color: #dc3545;
+}
+
+.toast-info {
+  background-color: #17a2b8;
 }
 
 /* Mobile Responsive Styles */
@@ -763,8 +1002,6 @@ onMounted(async () => {
 
   .modal-body {
     flex-direction: column;
-    height: auto;
-    padding: 15px;
   }
 
   .modal-title {
@@ -785,6 +1022,18 @@ onMounted(async () => {
   .containernostories {
     margin-right: 0;
     text-align: center;
+  }
+
+  .border-start {
+    border-left: none;
+    border-top: 1px solid #dee2e6;
+    margin-top: 2rem;
+    padding-top: 2rem;
+  }
+
+  .pe-4,
+  .ps-4 {
+    padding: 0 !important;
   }
 }
 

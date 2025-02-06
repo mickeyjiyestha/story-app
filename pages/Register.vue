@@ -6,7 +6,7 @@
   <div class="hero d-flex p-4">
     <div class="left-content px-5">
       <img src="@/assets/logo.svg" alt="" class="py-4" />
-      <h1 class="text-hero mt-4">Join the World’s Most-Loved</h1>
+      <h1 class="text-hero mt-4">Join the World's Most-Loved</h1>
       <h1 class="text-hero">Social Storytelling Platform!</h1>
       <p class="second-text mt-5">
         Create an account to explore interesting articles, connect with
@@ -76,10 +76,12 @@ import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/authStore";
 import { register } from "@/services/apiService";
-import { useRuntimeConfig } from "#app"; // Import useRuntimeConfig
+import { useRuntimeConfig } from "#app";
+import { useToast } from "vue-toastification";
 
 const router = useRouter();
 const authStore = useAuthStore();
+const toast = useToast();
 
 const name = ref("");
 const username = ref("");
@@ -87,36 +89,49 @@ const email = ref("");
 const password = ref("");
 const passwordConfirmation = ref("");
 
-const registerUser = async () => {
-  console.log({
-    name: name.value,
-    username: username.value,
-    email: email.value,
-    password: password.value,
-    confirm_password: passwordConfirmation.value,
-  });
-
-  if (
-    !name.value ||
-    !username.value ||
-    !email.value ||
-    !password.value ||
-    !passwordConfirmation.value
-  ) {
-    console.error("All fields are required.");
-    return;
+const validateForm = () => {
+  if (!name.value.trim()) {
+    toast.error("Please enter your name");
+    return false;
   }
-
+  if (!username.value.trim()) {
+    toast.error("Please enter a username");
+    return false;
+  }
+  if (!email.value.trim()) {
+    toast.error("Please enter your email");
+    return false;
+  }
+  if (!password.value) {
+    toast.error("Please enter a password");
+    return false;
+  }
+  if (!passwordConfirmation.value) {
+    toast.error("Please confirm your password");
+    return false;
+  }
   if (password.value !== passwordConfirmation.value) {
-    console.error("Passwords do not match.");
+    toast.error("Passwords do not match");
+    return false;
+  }
+  if (password.value.length < 6) {
+    toast.error("Password must be at least 6 characters long");
+    return false;
+  }
+  return true;
+};
+
+const registerUser = async () => {
+  if (!validateForm()) {
     return;
   }
 
-  // Access the runtime configuration
   const config = useRuntimeConfig();
-  const apiBaseUrl = config.public.apiBaseUrl; // Get the public API base URL
+  const apiBaseUrl = config.public.apiBaseUrl;
 
   try {
+    toast.info("Creating your account...");
+
     const response = await register(
       {
         name: name.value,
@@ -125,10 +140,8 @@ const registerUser = async () => {
         password: password.value,
         password_confirmation: passwordConfirmation.value,
       },
-      apiBaseUrl // Pass the base URL
+      apiBaseUrl
     );
-
-    console.log(response.data);
 
     const token = response.data.data.token;
     const user = response.data.user;
@@ -136,9 +149,29 @@ const registerUser = async () => {
     authStore.setToken(token);
     authStore.setUser(user);
 
-    router.push("/");
+    toast.success("Account created successfully! Redirecting...");
+
+    // Delay redirect to show success message
+    setTimeout(() => {
+      router.push("/");
+    }, 1500);
   } catch (error) {
     console.error("Registration Error:", error.response?.data || error.message);
+
+    if (error.response?.data?.errors) {
+      // Handle validation errors
+      Object.values(error.response.data.errors).forEach((errorMessages) => {
+        errorMessages.forEach((message) => {
+          toast.error(message);
+        });
+      });
+    } else if (error.response?.data?.message) {
+      // Handle specific error message from backend
+      toast.error(error.response.data.message);
+    } else {
+      // Handle generic error
+      toast.error("Registration failed. Please try again later.");
+    }
   }
 };
 </script>

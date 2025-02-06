@@ -66,23 +66,24 @@ import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/authStore";
 import { login } from "@/services/apiService";
-import { useRuntimeConfig } from "#app"; // Import useRuntimeConfig
+import { useRuntimeConfig } from "#app";
+import { useToast } from "vue-toastification";
 
 const router = useRouter();
 const authStore = useAuthStore();
+const toast = useToast();
 
 const name = ref("");
 const password = ref("");
 
 const loginUser = async () => {
   if (!name.value || !password.value) {
-    console.error("All fields are required.");
+    toast.error("All fields are required.");
     return;
   }
 
-  // Access the runtime configuration
   const config = useRuntimeConfig();
-  const apiBaseUrl = config.public.apiBaseUrl; // Get the public API base URL
+  const apiBaseUrl = config.public.apiBaseUrl;
 
   try {
     const response = await login(
@@ -90,22 +91,22 @@ const loginUser = async () => {
         login_identifier: name.value,
         password: password.value,
       },
-      apiBaseUrl // Pass the base URL
+      apiBaseUrl
     );
-
-    console.log("Login Response:", response.data);
 
     const token = response.data.data.token.plainTextToken;
     const user = response.data.data.user;
 
-    console.log("User Data:", user);
-    console.log("Token:", token);
-
     authStore.setToken(token);
     authStore.setUser(user);
 
+    toast.success("Login successful! Welcome back!");
+
     router.push("/");
   } catch (error) {
+    toast.error(
+      error.response?.data?.message || "Login failed. Please try again."
+    );
     console.error("Login Error:", error.response?.data || error.message);
   }
 };

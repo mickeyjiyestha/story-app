@@ -53,7 +53,7 @@
     </div>
     <div class="d-flex mt-5 container-button">
       <div class="container-cancel">
-        <Buttonfull :buttonText="'Cancel'" @click=""></Buttonfull>
+        <Buttonfull :buttonText="'Cancel'" @click="cancelStory"></Buttonfull>
       </div>
       <div>
         <Buttonfull
@@ -70,9 +70,11 @@ import { ref, onMounted } from "vue";
 import axios from "axios";
 import { useAuthStore } from "@/stores/authStore";
 import { useRouter } from "vue-router";
+import { useToast } from "vue-toastification";
 
 const router = useRouter();
 const authStore = useAuthStore();
+const toast = useToast();
 const categories = ref([]);
 const selectedCategory = ref(null);
 const dropdownVisible = ref(false);
@@ -81,7 +83,7 @@ const content = ref("");
 const images = ref([]);
 const isEditMode = ref(false);
 const storyId = ref(null);
-const deletedImageIds = ref([]); // Menyimpan ID gambar yang dihapus
+const deletedImageIds = ref([]);
 
 onMounted(async () => {
   console.log("Using token:", authStore.token);
@@ -99,6 +101,7 @@ onMounted(async () => {
     categories.value = response.data.categories;
   } catch (error) {
     console.error("Error fetching categories:", error);
+    toast.error("Failed to load categories");
   }
 
   const storyIdFromRoute = router.currentRoute.value.query.storyId;
@@ -122,13 +125,12 @@ onMounted(async () => {
       content.value = story.content || "";
       selectedCategory.value = story.category || null;
 
-      // Menampilkan gambar yang sudah ada
       images.value = story.images
         ? story.images.map((image) => ({
             url: image.url
               ? `https://b39d-103-100-175-121.ngrok-free.app${image.url}`
               : "",
-            id: image.id, // Menyimpan ID gambar
+            id: image.id,
           }))
         : [];
     } catch (error) {
@@ -136,17 +138,17 @@ onMounted(async () => {
         "Error fetching story details:",
         error.response?.data || error.message
       );
-      alert("Failed to load story details.");
+      toast.error("Failed to load story details");
     }
   }
 });
 
 const handleImageDeleted = (imageId) => {
-  console.log("Image deleted with ID:", imageId); // Tambahkan log untuk memastikan ID diterima
+  console.log("Image deleted with ID:", imageId);
   if (!deletedImageIds.value.includes(imageId)) {
     deletedImageIds.value.push(imageId);
   }
-  console.log("Current deletedImageIds:", deletedImageIds.value); // Log array ID yang akan dihapus
+  console.log("Current deletedImageIds:", deletedImageIds.value);
 };
 
 const selectCategory = (category) => {
@@ -159,14 +161,33 @@ const toggleDropdown = () => {
   dropdownVisible.value = !dropdownVisible.value;
 };
 
+const cancelStory = () => {
+  router.push("/userprofile");
+  toast.info("Story creation cancelled");
+};
+
+const validateForm = () => {
+  if (!title.value.trim()) {
+    toast.error("Please enter a title");
+    return false;
+  }
+  if (!content.value.trim()) {
+    toast.error("Please enter content");
+    return false;
+  }
+  if (!selectedCategory.value) {
+    toast.error("Please select a category");
+    return false;
+  }
+  if (!images.value.length) {
+    toast.error("Please add at least one image");
+    return false;
+  }
+  return true;
+};
+
 const uploadStory = async () => {
-  if (
-    !title.value ||
-    !content.value ||
-    !images.value.length ||
-    !selectedCategory.value
-  ) {
-    alert("Please fill in all required fields.");
+  if (!validateForm()) {
     return;
   }
 
@@ -175,27 +196,21 @@ const uploadStory = async () => {
   formData.append("content", content.value);
   formData.append("category_id", selectedCategory.value.id);
 
-  // Hanya tambahkan gambar baru (File) ke FormData
   images.value.forEach((image) => {
     if (image instanceof File) {
       formData.append("images[]", image);
     }
   });
 
-  // Jika dalam mode edit dan ada gambar yang dihapus
   if (isEditMode.value) {
     formData.append("_method", "PUT");
-
-    // Log sebelum menambahkan ke FormData
     console.log("Deleted image IDs before append:", deletedImageIds.value);
 
-    // Menambahkan ID gambar yang dihapus sebagai delete_image[]
     deletedImageIds.value.forEach((id) => {
       formData.append("delete_images[]", id.toString());
-      console.log("Appending delete_images[]:", id); // Log setiap ID yang ditambahkan
+      console.log("Appending delete_images[]:", id);
     });
 
-    // Log FormData untuk memastikan data terkirim dengan benar
     for (let pair of formData.entries()) {
       console.log(pair[0], pair[1]);
     }
@@ -214,21 +229,32 @@ const uploadStory = async () => {
       },
     });
     console.log("Story uploaded successfully:", response.data);
-    router.push("/userprofile");
+
+    // Show success toast based on mode
+    toast.success(
+      isEditMode.value
+        ? "Story updated successfully!"
+        : "Story created successfully!"
+    );
+
+    // Redirect after a short delay to ensure toast is visible
+    setTimeout(() => {
+      router.push("/userprofile");
+    }, 1500);
   } catch (error) {
     if (error.response) {
       console.error("Error uploading story:", error.response.data);
-      alert(
-        `Failed to upload story: ${
-          error.response.data.message || error.message
+      toast.error(
+        `Failed to ${isEditMode.value ? "update" : "create"} story: ${
+          error.response.data.message || "Please try again"
         }`
       );
     } else if (error.request) {
       console.error("No response received:", error.request);
-      alert("Failed to upload story: No response from server.");
+      toast.error("Network error. Please check your connection.");
     } else {
       console.error("Error:", error.message);
-      alert(`Failed to upload story: ${error.message}`);
+      toast.error(`An error occurred: ${error.message}`);
     }
   }
 };

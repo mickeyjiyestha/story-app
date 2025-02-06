@@ -17,6 +17,11 @@
       rel="stylesheet"
     />
     <WebHeader></WebHeader>
+    <div v-if="searchKeyword" class="search-results-count container-fluid mt-3">
+      <p class="mb-0">
+        {{ allStories.length }} results for '{{ searchKeyword }}'
+      </p>
+    </div>
     <div class="hero-bg d-flex p-3">
       <nuxt-link to="/">
         <p class="first-hero-child">Home</p>
@@ -103,6 +108,7 @@ import {
   fetchSortedStories,
   fetchCategories,
   fetchStoriesByCategoryId,
+  fetchStoriesByKeyword,
 } from "~/services/apiService";
 import { useAuthStore } from "@/stores/authStore";
 import { useRoute } from "vue-router";
@@ -142,14 +148,7 @@ const lastPage = ref(1);
 
 // Filter stories based on the search keyword
 const filteredStories = computed(() => {
-  const keyword = (searchKeyword.value ?? "").toLowerCase();
-  if (!keyword) return allStories.value;
-  return allStories.value.filter((story) => {
-    return (
-      story.title.toLowerCase().includes(keyword) ||
-      story.content.toLowerCase().includes(keyword)
-    );
-  });
+  return allStories.value;
 });
 
 // Pagination logic
@@ -158,6 +157,23 @@ const paginatedStories = computed(() => {
   const end = start + itemsPerPage;
   return filteredStories.value.slice(start, end);
 });
+
+const loadSearchResults = async () => {
+  if (searchKeyword.value) {
+    try {
+      const results = await fetchStoriesByKeyword(searchKeyword.value);
+      if (results && results.data && Array.isArray(results.data.stories)) {
+        allStories.value = results.data.stories;
+        totalPages.value = Math.ceil(
+          results.data.stories.length / itemsPerPage
+        );
+        lastPage.value = totalPages.value;
+      }
+    } catch (error) {
+      console.error("Error fetching search results:", error);
+    }
+  }
+};
 
 const changePage = async (page: number) => {
   if (page < 1 || page > lastPage.value) return;
@@ -239,7 +255,7 @@ const loadStories = async (page: number) => {
   try {
     const storiesData = await fetchAllStories(page);
     if (storiesData && Array.isArray(storiesData.stories)) {
-      allStories.value = [...allStories.value, ...storiesData.stories];
+      allStories.value = storiesData.stories;
       totalPages.value = storiesData.pagination.last_page;
       lastPage.value = storiesData.pagination.last_page;
     } else {
@@ -252,13 +268,19 @@ const loadStories = async (page: number) => {
 
 onMounted(async () => {
   try {
-    const storiesData = await fetchAllStories(currentPage.value);
-    if (storiesData && Array.isArray(storiesData.stories)) {
-      allStories.value = storiesData.stories;
-      totalPages.value = storiesData.pagination.last_page;
-      lastPage.value = storiesData.pagination.last_page;
+    if (route.query.keyword) {
+      // Jika ada keyword pencarian, load hasil pencarian
+      await loadSearchResults();
     } else {
-      console.error("No stories found in the response.");
+      // Jika tidak ada keyword, load stories normal
+      const storiesData = await fetchAllStories(currentPage.value);
+      if (storiesData && Array.isArray(storiesData.stories)) {
+        allStories.value = storiesData.stories;
+        totalPages.value = storiesData.pagination.last_page;
+        lastPage.value = storiesData.pagination.last_page;
+      } else {
+        console.error("No stories found in the response.");
+      }
     }
 
     const token = authStore.token;
@@ -280,6 +302,15 @@ watch(searchKeyword, () => {
 </script>
 
 <style scoped>
+.search-results-count {
+  font-family: playfair display, serif;
+  font-size: 45px;
+  margin-left: 60px;
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: #333;
+  padding: 0.5rem 0;
+}
 /* Original Desktop Styles */
 .pagination-container {
   display: flex;

@@ -18,14 +18,14 @@
     />
   </div>
 
-  <!-- Modal untuk login success -->
+  <!-- Modal untuk login success
   <div v-if="showLoginModal" class="modal">
     <div class="modal-content">
       <img src="" alt="Success" class="checkmark me-2" />
       <p class="modal-message my-auto">You have successfully logged in.</p>
       <i class="fa-solid fa-xmark close ms-5" @click="closeLoginModal"></i>
     </div>
-  </div>
+  </div> -->
   <WebHeader></WebHeader>
 
   <div>
