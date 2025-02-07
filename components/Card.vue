@@ -7,7 +7,7 @@
     <div class="card" style="cursor: pointer" @click="navigateToStory">
       <div class="image-container position-relative">
         <img
-          :src="getImageUrl(story.images[0]?.url)"
+          :src="getImageUrl(story.images[0].url)"
           class="card-img-top card-image"
           alt="Story Image"
         />
@@ -24,7 +24,7 @@
       <div class="footer-card">
         <div class="user-info">
           <img
-            :src="story.user.avatar || '/path/to/default-avatar.jpg'"
+            :src="getUserAvatarUrl(story.user.avatar)"
             class="profile-pic rounded-circle"
             alt="Profile Picture"
           />
@@ -47,9 +47,11 @@
 import { defineProps } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/authStore";
+import { useRuntimeConfig } from "#app";
 
 const router = useRouter();
 const authStore = useAuthStore();
+const config = useRuntimeConfig();
 
 const props = defineProps({
   story: {
@@ -63,8 +65,15 @@ const props = defineProps({
 });
 
 const getImageUrl = (url) => {
-  const apiBaseUrl = "https://b39d-103-100-175-121.ngrok-free.app";
-  return `${apiBaseUrl}${url}`;
+  if (!url) return "/path/to/default-image.jpg";
+  if (url.startsWith("http")) return url;
+  return `${config.public.apiBaseUrl}${url}`;
+};
+
+const getUserAvatarUrl = (avatar) => {
+  if (!avatar) return "/path/to/default-avatar.jpg";
+  if (avatar.startsWith("http")) return avatar;
+  return `${config.public.apiBaseUrl}${avatar}`;
 };
 
 const truncateContent = (content) => {
@@ -76,23 +85,29 @@ const truncateContent = (content) => {
 };
 
 const navigateToStory = () => {
-  router.push({ path: `/detail`, query: { storyId: props.story.id } });
+  if (authStore.isAuthenticated) {
+    router.push({ path: `/detail`, query: { storyId: props.story.id } });
+  } else {
+    router.push("/login");
+  }
 };
 
 const handleBookmark = async () => {
-  const apiBaseUrl = "https://b39d-103-100-175-121.ngrok-free.app";
   const token = authStore.token;
   const storyId = props.story.id;
 
   try {
-    const response = await fetch(`${apiBaseUrl}/api/bookmarks/${storyId}`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-        "ngrok-skip-browser-warning": "69420",
-      },
-    });
+    const response = await fetch(
+      `${config.public.apiBaseUrl}/api/bookmarks/${storyId}`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+          "ngrok-skip-browser-warning": "69420",
+        },
+      }
+    );
 
     if (response.ok) {
       alert("Story bookmarked successfully!");

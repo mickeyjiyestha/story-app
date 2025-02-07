@@ -146,7 +146,7 @@
                 <div class="profile-modal me-3">
                   <img
                     id="profile-pic-modal"
-                    :src="avatar"
+                    :src="imagePreview || avatar"
                     class="profile-pic"
                     alt="Profile Picture"
                   />
@@ -281,6 +281,8 @@ const router = useRouter();
 const authStore = useAuthStore();
 const user = authStore.user;
 const toast = useToast(); // Gunakan vue-toastification
+const fileToUpload = ref(null);
+const previewUrl = ref(null);
 
 const name = ref("");
 const email = ref("");
@@ -323,29 +325,11 @@ const triggerFileInput = () => {
 const updateProfilePicture = async (event) => {
   const file = event.target.files[0];
   if (file) {
-    try {
-      const response = await profilePicture(file, authStore.token); // Use the new API method
-
-      // Check if the response contains the relative URL
-      const relativeUrl = response.data.data.url; // Assuming this is the relative path
-      const baseUrl = useRuntimeConfig().public.apiBaseUrl; // Access the base URL from Nuxt config
-      console.log("Base URL:", baseUrl); // Log the base URL
-      const newAvatarUrl = `${baseUrl}${relativeUrl}`;
-      avatar.value = newAvatarUrl;
-
-      // Update avatar in store
-      authStore.setUser({
-        ...authStore.user,
-        avatar: newAvatarUrl,
-      });
-
-      console.log("Uploaded image URL:", avatar.value);
-    } catch (error) {
-      console.error(
-        "Error uploading image:",
-        error.response ? error.response.data : error.message
-      );
-    }
+    fileToUpload.value = file;
+    // Membuat preview URL untuk tampilan
+    previewUrl.value = URL.createObjectURL(file);
+    // Update tampilan preview
+    avatar.value = previewUrl.value;
   }
 };
 
@@ -371,25 +355,26 @@ const closeModal = () => {
 };
 
 const updateProfile = async () => {
-  console.log("Updating profile", {
-    name: name.value,
-    about: about.value,
-    avatar: avatar.value,
-  });
-
-  const userId = user.id; // Ensure user.id is valid
-  const token = authStore.token; // Get the token from the auth store
-
-  // Access the runtime configuration
+  const userId = user.id;
+  const token = authStore.token;
   const config = useRuntimeConfig();
-  const apiBaseUrl = config.public.apiBaseUrl; // Get the public API base URL
+  const apiBaseUrl = config.public.apiBaseUrl;
 
   try {
+    let avatarPath = user.avatar; // Default ke avatar yang ada
+
+    // Upload gambar jika ada file baru
+    if (fileToUpload.value) {
+      const response = await profilePicture(fileToUpload.value, token);
+      // Ambil hanya path relatif dari response
+      avatarPath = response.data.data.url; // Ini seharusnya sudah berupa path relatif seperti '/storage/avatar/filename.jpg'
+    }
+
     const response = await axios.put(
-      `${apiBaseUrl}/api/update-user-profile/${userId}`, // Use the dynamic base URL
+      `${apiBaseUrl}/api/update-user-profile/${userId}`,
       {
         name: name.value,
-        avatar: avatar.value,
+        avatar: avatarPath, // Gunakan path relatif
         about: about.value,
       },
       {
@@ -399,25 +384,28 @@ const updateProfile = async () => {
       }
     );
 
-    console.log("Profile updated successfully:", response.data);
-
-    // Update data in store
+    // Update data di store dengan URL lengkap untuk tampilan
     authStore.setUser({
       ...authStore.user,
       name: name.value,
       about: about.value,
-      avatar: avatar.value,
+      avatar: `${apiBaseUrl}${avatarPath}`, // Gabungkan baseUrl dengan path untuk tampilan
     });
 
-    // Log the updated user data
-    console.log("User data saved in store:", authStore.user);
+    // Reset file upload state
+    fileToUpload.value = null;
+    if (previewUrl.value) {
+      URL.revokeObjectURL(previewUrl.value);
+      previewUrl.value = null;
+    }
 
-    closeModal();
+    console.log("Profile updated successfully:", response.data);
   } catch (error) {
     console.error(
       "Error updating profile:",
       error.response?.data || error.message
     );
+    throw error;
   }
 };
 
@@ -487,10 +475,11 @@ const handlePasswordUpdate = async () => {
 };
 
 const handleUpdate = async () => {
+  // Modifikasi pengecekan perubahan
   let hasProfileChanges =
     name.value !== user.name ||
     about.value !== user.about ||
-    avatar.value !== user.avatar; // Tambahkan pengecekan perubahan avatar
+    fileToUpload.value !== null; // Tambahkan pengecekan file baru
 
   let hasPasswordChanges =
     password.value && newPassword.value && confirm_password.value;
@@ -624,12 +613,13 @@ onMounted(async () => {
           email.value = userResponse.data.user.email || "No email available";
           about.value =
             userResponse.data.user.about || "No description available.";
-          avatar.value =
+          // Gabungkan baseUrl dengan path avatar untuk tampilan
+          const avatarPath =
             userResponse.data.user.avatar || "/path/to/default-avatar.jpg";
+          avatar.value = `${apiBaseUrl}${avatarPath}`;
         }
 
-        // Load stories by default
-        await loadUserStories(); // Gunakan loadUserStories sebagai default view
+        await loadUserStories();
       } catch (error) {
         console.error(
           "Error fetching user data or stories:",

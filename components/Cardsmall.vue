@@ -40,8 +40,10 @@
 <script setup>
 import { defineProps } from "vue";
 import { useRouter } from "vue-router";
+import { useAuthStore } from "#build/imports";
 
 const router = useRouter();
+const authStore = useAuthStore();
 
 const props = defineProps({
   story: {
@@ -55,7 +57,7 @@ const props = defineProps({
 });
 
 const getImageUrl = (url) => {
-  const apiBaseUrl = "https://b39d-103-100-175-121.ngrok-free.app";
+  const apiBaseUrl = "https://7b22-103-100-175-121.ngrok-free.app";
   return `${apiBaseUrl}${url}`;
 };
 
@@ -65,7 +67,11 @@ const truncateContent = (content) => {
 };
 
 const navigateToStory = () => {
-  router.push({ path: `/detail`, query: { storyId: props.story.id } });
+  if (authStore.isAuthenticated) {
+    router.push({ path: `/detail`, query: { storyId: props.story.id } });
+  } else {
+    router.push("/login");
+  }
 };
 </script>
 

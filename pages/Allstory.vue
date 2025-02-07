@@ -72,8 +72,9 @@
               class="search-input"
               placeholder="Search Story"
               v-model="searchKeyword"
+              @keyup.enter="handleSearch"
             />
-            <i class="fas fa-search search-icon"></i>
+            <i class="fas fa-search search-icon" @click="handleSearch"></i>
           </div>
         </div>
       </div>
@@ -81,7 +82,7 @@
         <div class="row container-fluid mt-5">
           <div
             class="col-md-4 card-container mt-5"
-            v-for="story in paginatedStories"
+            v-for="story in allStories"
             :key="story.id"
           >
             <Card :story="story" class="card-home mb-4"></Card>
@@ -100,7 +101,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script>
 import { ref, onMounted, computed, watch } from "vue";
 import {
   fetchAllStories,
@@ -111,194 +112,208 @@ import {
   fetchStoriesByKeyword,
 } from "~/services/apiService";
 import { useAuthStore } from "@/stores/authStore";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import Pagination from "@/components/Pagination.vue";
 
-interface Story {
-  id: number;
-  title: string;
-  content: string;
-  category: { name: string };
-  user: { id: number; avatar: string; username: string };
-  images: { id: number; filename: string; url: string }[];
-}
+export default {
+  setup() {
+    const route = useRoute();
+    const router = useRouter();
+    const authStore = useAuthStore();
+    const selectedSort = ref("Newest");
+    const selectedCategory = ref("Select Category");
+    const isSortDropdownOpen = ref(false);
+    const isCategoryDropdownOpen = ref(false);
+    const allStories = ref([]);
+    const categories = ref([]);
+    const searchKeyword = ref(
+      Array.isArray(route.query.keyword)
+        ? route.query.keyword[0] || ""
+        : route.query.keyword || ""
+    );
+    const currentPage = ref(1);
+    const itemsPerPage = 12;
+    const totalPages = ref(1);
 
-interface Category {
-  id: number;
-  name: string;
-}
-
-const route = useRoute();
-const authStore = useAuthStore();
-const selectedSort = ref("Newest");
-const selectedCategory = ref("Select Category");
-const isSortDropdownOpen = ref(false);
-const isCategoryDropdownOpen = ref(false);
-const allStories = ref<Story[]>([]);
-const categories = ref<Category[]>([]);
-const searchKeyword = ref<string>(
-  Array.isArray(route.query.keyword)
-    ? route.query.keyword[0] || ""
-    : route.query.keyword || ""
-);
-const currentPage = ref(1);
-const itemsPerPage = 12; // Ubah menjadi 12 sesuai dengan response API
-const totalPages = ref(1);
-const lastPage = ref(1);
-
-// Filter stories based on the search keyword
-const filteredStories = computed(() => {
-  return allStories.value;
-});
-
-// Pagination logic
-const paginatedStories = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage;
-  const end = start + itemsPerPage;
-  return filteredStories.value.slice(start, end);
-});
-
-const loadSearchResults = async () => {
-  if (searchKeyword.value) {
-    try {
-      const results = await fetchStoriesByKeyword(searchKeyword.value);
-      if (results && results.data && Array.isArray(results.data.stories)) {
-        allStories.value = results.data.stories;
-        totalPages.value = Math.ceil(
-          results.data.stories.length / itemsPerPage
-        );
-        lastPage.value = totalPages.value;
+    // Scroll to top when route changes
+    watch(
+      () => route.fullPath,
+      () => {
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth",
+        });
       }
-    } catch (error) {
-      console.error("Error fetching search results:", error);
-    }
-  }
-};
+    );
 
-const changePage = async (page: number) => {
-  if (page < 1 || page > lastPage.value) return;
-  currentPage.value = page;
-  await loadStories(page);
-};
+    const handleSearch = async () => {
+      if (searchKeyword.value.trim()) {
+        try {
+          const results = await fetchStoriesByKeyword(
+            searchKeyword.value.trim()
+          );
+          if (results && results.data && Array.isArray(results.data.stories)) {
+            allStories.value = results.data.stories;
+            totalPages.value = results.data.pagination.last_page;
 
-const toggleSortDropdown = () => {
-  isSortDropdownOpen.value = !isSortDropdownOpen.value;
-};
-
-const toggleCategoryDropdown = () => {
-  isCategoryDropdownOpen.value = !isCategoryDropdownOpen.value;
-};
-
-const selectSort = async (sortOption: string) => {
-  selectedSort.value = sortOption;
-  isSortDropdownOpen.value = false;
-
-  if (sortOption === "Newest") {
-    try {
-      console.log("Fetching latest stories...");
-      const latestStories = await fetchStoriesByLatest();
-      console.log("Latest Stories:", latestStories);
-      allStories.value = latestStories;
-      currentPage.value = 1;
-      totalPages.value = Math.ceil(latestStories.length / itemsPerPage);
-    } catch (error) {
-      console.error("Error fetching latest stories:", error);
-    }
-  } else if (sortOption === "A - Z") {
-    try {
-      console.log("Fetching sorted stories A-Z...");
-      const sortedStories = await fetchSortedStories("asc");
-      console.log("Sorted Stories:", sortedStories);
-      allStories.value = sortedStories;
-      currentPage.value = 1;
-      totalPages.value = Math.ceil(sortedStories.length / itemsPerPage);
-    } catch (error) {
-      console.error("Error fetching sorted stories:", error);
-    }
-  } else if (sortOption === "Z - A") {
-    try {
-      console.log("Fetching sorted stories Z-A...");
-      const sortedStories = await fetchSortedStories("desc");
-      console.log("Sorted Stories:", sortedStories);
-      allStories.value = sortedStories;
-      currentPage.value = 1;
-      totalPages.value = Math.ceil(sortedStories.length / itemsPerPage);
-    } catch (error) {
-      console.error("Error fetching sorted stories:", error);
-    }
-  }
-};
-
-const selectCategory = async (category: string) => {
-  selectedCategory.value = category;
-  isCategoryDropdownOpen.value = false;
-
-  const categoryId = categories.value.find((cat) => cat.name === category)?.id;
-  if (categoryId) {
-    try {
-      const stories = await fetchStoriesByCategoryId(
-        categoryId,
-        authStore.token
-      );
-      allStories.value = stories;
-      currentPage.value = 1;
-      totalPages.value = Math.ceil(stories.length / itemsPerPage);
-    } catch (error) {
-      console.error("Error fetching stories by category:", error);
-    }
-  } else {
-    console.error("Category ID not found.");
-  }
-};
-
-const loadStories = async (page: number) => {
-  try {
-    const storiesData = await fetchAllStories(page);
-    if (storiesData && Array.isArray(storiesData.stories)) {
-      allStories.value = storiesData.stories;
-      totalPages.value = storiesData.pagination.last_page;
-      lastPage.value = storiesData.pagination.last_page;
-    } else {
-      console.error("No stories found in the response.");
-    }
-  } catch (error) {
-    console.error("Error fetching stories:", error);
-  }
-};
-
-onMounted(async () => {
-  try {
-    if (route.query.keyword) {
-      // Jika ada keyword pencarian, load hasil pencarian
-      await loadSearchResults();
-    } else {
-      // Jika tidak ada keyword, load stories normal
-      const storiesData = await fetchAllStories(currentPage.value);
-      if (storiesData && Array.isArray(storiesData.stories)) {
-        allStories.value = storiesData.stories;
-        totalPages.value = storiesData.pagination.last_page;
-        lastPage.value = storiesData.pagination.last_page;
-      } else {
-        console.error("No stories found in the response.");
+            // Update URL with search query
+            router.push({
+              query: { ...route.query, keyword: searchKeyword.value.trim() },
+            });
+          }
+        } catch (error) {
+          console.error("Error searching stories:", error);
+        }
       }
-    }
+    };
 
-    const token = authStore.token;
-    if (!token) {
-      console.error("No token found. Please log in again.");
-      return;
-    }
+    const loadSearchResults = async () => {
+      if (searchKeyword.value) {
+        try {
+          const results = await fetchStoriesByKeyword(searchKeyword.value);
+          if (results && results.data && Array.isArray(results.data.stories)) {
+            allStories.value = results.data.stories;
+            totalPages.value = results.data.pagination.last_page;
+          }
+        } catch (error) {
+          console.error("Error fetching search results:", error);
+        }
+      }
+    };
 
-    const categoriesData = await fetchCategories(token);
-    categories.value = categoriesData;
-  } catch (error) {
-    console.error("Error fetching stories or categories:", error);
-  }
-});
+    const changePage = async (page) => {
+      try {
+        currentPage.value = page;
+        const storiesData = await fetchAllStories(page);
+        if (storiesData && Array.isArray(storiesData.stories)) {
+          allStories.value = storiesData.stories;
+          totalPages.value = storiesData.pagination.last_page;
+        }
+        // Scroll to top after page change
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth",
+        });
+      } catch (error) {
+        console.error("Error changing page:", error);
+      }
+    };
 
-watch(searchKeyword, () => {
-  currentPage.value = 1;
-});
+    const toggleSortDropdown = () => {
+      isSortDropdownOpen.value = !isSortDropdownOpen.value;
+    };
+
+    const toggleCategoryDropdown = () => {
+      isCategoryDropdownOpen.value = !isCategoryDropdownOpen.value;
+    };
+
+    const selectSort = async (sortOption) => {
+      selectedSort.value = sortOption;
+      isSortDropdownOpen.value = false;
+      currentPage.value = 1;
+
+      try {
+        let stories;
+        if (sortOption === "Newest") {
+          stories = await fetchStoriesByLatest();
+        } else if (sortOption === "A - Z") {
+          stories = await fetchSortedStories("asc");
+        } else if (sortOption === "Z - A") {
+          stories = await fetchSortedStories("desc");
+        }
+
+        if (stories && stories.data) {
+          allStories.value = stories.data.stories;
+          totalPages.value = stories.data.pagination.last_page;
+        }
+      } catch (error) {
+        console.error(`Error fetching ${sortOption} stories:`, error);
+      }
+    };
+
+    const selectCategory = async (category) => {
+      selectedCategory.value = category;
+      isCategoryDropdownOpen.value = false;
+      currentPage.value = 1;
+
+      const categoryId = categories.value.find(
+        (cat) => cat.name === category
+      )?.id;
+      if (categoryId) {
+        try {
+          const response = await fetchStoriesByCategoryId(
+            categoryId,
+            authStore.token
+          );
+          if (response && response.data) {
+            allStories.value = response.data.stories;
+            totalPages.value = response.data.pagination.last_page;
+          }
+        } catch (error) {
+          console.error("Error fetching stories by category:", error);
+        }
+      }
+    };
+
+    const loadStories = async (page) => {
+      try {
+        const storiesData = await fetchAllStories(page);
+        if (storiesData && Array.isArray(storiesData.stories)) {
+          allStories.value = storiesData.stories;
+          totalPages.value = storiesData.pagination.last_page;
+        }
+      } catch (error) {
+        console.error("Error fetching stories:", error);
+      }
+    };
+
+    onMounted(async () => {
+      try {
+        if (route.query.keyword) {
+          await loadSearchResults();
+        } else {
+          await loadStories(currentPage.value);
+        }
+
+        const token = authStore.token;
+        if (!token) {
+          console.error("No token found. Please log in again.");
+          return;
+        }
+
+        const categoriesData = await fetchCategories(token);
+        categories.value = categoriesData;
+      } catch (error) {
+        console.error("Error fetching stories or categories:", error);
+      }
+    });
+
+    watch(searchKeyword, () => {
+      if (!searchKeyword.value) {
+        loadStories(1);
+        router.push({ query: {} }); // Clear search query from URL
+      }
+    });
+
+    return {
+      selectedSort,
+      selectedCategory,
+      isSortDropdownOpen,
+      isCategoryDropdownOpen,
+      allStories,
+      categories,
+      searchKeyword,
+      currentPage,
+      totalPages,
+      handleSearch,
+      changePage,
+      toggleSortDropdown,
+      toggleCategoryDropdown,
+      selectSort,
+      selectCategory,
+    };
+  },
+};
 </script>
 
 <style scoped>

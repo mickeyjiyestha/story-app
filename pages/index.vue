@@ -176,6 +176,7 @@
         <Buttoncategory
           class="btn-category"
           :label="'Adventure'"
+          @click="navigateToCategory(4)"
         ></Buttoncategory>
         <Buttoncategory
           class="btn-category"
@@ -240,9 +241,8 @@ const searchResults = ref([]);
 const apiBaseUrl = "https://2105-103-100-175-121.ngrok-free.app";
 const token = authStore.token;
 
-// Close modal
-const closeLoginModal = () => {
-  showLoginModal.value = false;
+const navigateToCategory = (categoryId) => {
+  navigateTo({ path: "/allstory", query: { categoryId } });
 };
 
 const searchStories = async () => {

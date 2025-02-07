@@ -22,11 +22,7 @@
             class="d-flex align-items-center my-profile"
           >
             <nuxt-link to="/userprofile" class="buttonProfile">
-              <img
-                :src="user.avatar"
-                class="profile-pic"
-                alt="Profile Picture"
-              />
+              <img :src="avatarUrl" class="profile-pic" alt="Profile Picture" />
             </nuxt-link>
             <div class="dropdown">
               <div class="dropdown-toggle" @click="toggleDropdown">
@@ -54,13 +50,28 @@
 import { computed, ref } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/authStore";
+import { useRuntimeConfig } from "#app";
 
 const router = useRouter();
 const authStore = useAuthStore();
+const config = useRuntimeConfig();
 const isAuthenticated = computed(() => authStore.isAuthenticated);
 const user = authStore.user;
 
 const isDropdownOpen = ref(false);
+
+// Compute full avatar URL
+const avatarUrl = computed(() => {
+  if (!user?.avatar) return "/path/to/default-avatar.jpg";
+
+  // Jika avatar sudah berupa URL lengkap, gunakan langsung
+  if (user.avatar.startsWith("http")) {
+    return user.avatar;
+  }
+
+  // Jika avatar hanya path, gabungkan dengan baseUrl
+  return `${config.public.apiBaseUrl}${user.avatar}`;
+});
 
 const toggleDropdown = () => {
   isDropdownOpen.value = !isDropdownOpen.value;

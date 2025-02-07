@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const apiClient = axios.create({
-  baseURL: "https://b39d-103-100-175-121.ngrok-free.app/api",
+  baseURL: "https://7b22-103-100-175-121.ngrok-free.app/api",
   headers: {
     "Content-Type": "application/json",
     "ngrok-skip-browser-warning": "69420",
@@ -210,27 +210,18 @@ export const fetchStoriesByHorror = async () => {
   }
 };
 
-export const fetchSortedStories = async (sortOrder) => {
+export const fetchSortedStories = async (order = "asc") => {
   try {
-    const response = await apiClient.get(`/story-sort-by?sort=${sortOrder}`);
-
-    console.log("Raw API Response:", response);
-
-    if (
-      response.status === 200 &&
-      response.data &&
-      response.data.data &&
-      response.data.data.stories &&
-      Array.isArray(response.data.data.stories)
-    ) {
-      console.log("Sorted Stories:", response.data.data.stories);
-      return response.data.data.stories;
-    } else {
-      console.log("No stories found in the response.");
-      return [];
-    }
+    const response = await apiClient.get(`/story-sort-by?sort=${order}`);
+    console.log("Sorted Stories:", response.data.data.stories);
+    return {
+      data: {
+        stories: response.data.data.stories,
+        pagination: response.data.data.pagination || { last_page: 1 },
+      },
+    };
   } catch (error) {
-    console.error("Error fetching sorted stories:", error);
+    console.error(`Error fetching sorted stories (${order}):`, error);
     throw error;
   }
 };
@@ -267,12 +258,12 @@ export const fetchStoriesByCategoryId = async (categoryId, token) => {
   try {
     const response = await apiClient.get(`/story-by-category/${categoryId}`, {
       headers: {
-        "ngrok-skip-browser-warning": "69420",
         Authorization: `Bearer ${token}`,
+        "ngrok-skip-browser-warning": "69420",
       },
     });
 
-    console.log("Raw API Response:", response);
+    console.log("Category Stories Response:", response.data);
 
     if (
       response.status === 200 &&
@@ -281,10 +272,20 @@ export const fetchStoriesByCategoryId = async (categoryId, token) => {
       Array.isArray(response.data.data.stories)
     ) {
       console.log("Stories:", response.data.data.stories);
-      return response.data.data.stories;
+      return {
+        data: {
+          stories: response.data.data.stories,
+          pagination: response.data.pagination || { last_page: 1 },
+        },
+      };
     } else {
       console.log("No stories found in the response.");
-      return [];
+      return {
+        data: {
+          stories: [],
+          pagination: { last_page: 1 },
+        },
+      };
     }
   } catch (error) {
     console.error("Error fetching stories by category:", error);
