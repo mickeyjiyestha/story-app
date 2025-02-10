@@ -15,7 +15,7 @@
       </div>
       <div class="footer-card d-flex align-items-center">
         <img
-          :src="story.user?.avatar || '/path/to/default-avatar.jpg'"
+          :src="getUserAvatarUrl(story.user?.avatar)"
           class="profile-pic rounded-circle"
           alt="Profile Picture"
         />
@@ -40,6 +40,7 @@ import { useAuthStore } from "@/stores/authStore";
 
 const router = useRouter();
 const authStore = useAuthStore();
+const config = useRuntimeConfig();
 
 const props = defineProps({
   story: {
@@ -53,7 +54,7 @@ const props = defineProps({
 });
 
 const getImageUrl = (url) => {
-  const apiBaseUrl = "https://7b22-103-100-175-121.ngrok-free.app";
+  const apiBaseUrl = "https://2ee9-103-100-175-121.ngrok-free.app";
   return url ? `${apiBaseUrl}${url}` : "/path/to/default-image.jpg";
 };
 
@@ -66,6 +67,12 @@ const formatDate = (date) => {
   if (!date) return "N/A";
   const options = { year: "numeric", month: "long", day: "numeric" };
   return new Date(date).toLocaleDateString(undefined, options);
+};
+
+const getUserAvatarUrl = (avatar) => {
+  if (!avatar) return "/path/to/default-avatar.jpg";
+  if (avatar.startsWith("http")) return avatar;
+  return `${config.public.apiBaseUrl}${avatar}`;
 };
 
 const navigateToStory = () => {

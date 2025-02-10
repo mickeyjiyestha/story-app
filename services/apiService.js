@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const apiClient = axios.create({
-  baseURL: "https://7b22-103-100-175-121.ngrok-free.app/api",
+  baseURL: "https://2ee9-103-100-175-121.ngrok-free.app/api",
   headers: {
     "Content-Type": "application/json",
     "ngrok-skip-browser-warning": "69420",
@@ -55,7 +55,7 @@ export const fetchUserStories = async (userId, token, apiBaseUrl, page = 1) => {
 
 export const fetchAllStories = async (page = 1) => {
   try {
-    const response = await apiClient.get(`/all-stories?page=${page}`);
+    const response = await apiClient.get(`/stories/all?page=${page}`);
     console.log(`Raw API Response for page ${page}:`, response);
 
     if (
@@ -112,7 +112,7 @@ export const fetchStoriesByKeyword = async (keyword) => {
 
 export const fetchStoriesByLatest = async () => {
   try {
-    const response = await apiClient.get("/story-index");
+    const response = await apiClient.get("/stories/latest");
     console.log("Raw API Response:", response);
 
     if (
@@ -137,7 +137,7 @@ export const fetchStoriesByLatest = async () => {
 
 export const fetchStoriesByRomance = async () => {
   try {
-    const response = await apiClient.get("/story-by-category/3");
+    const response = await apiClient.get("stories/category/3");
     console.log("Raw API Response:", response);
 
     if (
@@ -162,7 +162,7 @@ export const fetchStoriesByRomance = async () => {
 
 export const fetchStoriesByComedy = async () => {
   try {
-    const response = await apiClient.get("/story-by-category/2");
+    const response = await apiClient.get("stories/category/2");
     console.log("Raw API Response:", response);
 
     if (
@@ -187,7 +187,7 @@ export const fetchStoriesByComedy = async () => {
 
 export const fetchStoriesByHorror = async () => {
   try {
-    const response = await apiClient.get("/story-by-category/1");
+    const response = await apiClient.get("stories/category/1");
     console.log("Raw API Response:", response);
 
     if (
@@ -212,7 +212,7 @@ export const fetchStoriesByHorror = async () => {
 
 export const fetchSortedStories = async (order = "asc") => {
   try {
-    const response = await apiClient.get(`/story-sort-by?sort=${order}`);
+    const response = await apiClient.get(`/stories/sort?sort=${order}`);
     console.log("Sorted Stories:", response.data.data.stories);
     return {
       data: {
@@ -226,12 +226,43 @@ export const fetchSortedStories = async (order = "asc") => {
   }
 };
 
-export const fetchCategories = async (token) => {
+export const fetchByNewest = async () => {
+  try {
+    const response = await apiClient.get("/stories/newest");
+    console.log("Newest Stories:", response.data.data.stories);
+    return {
+      data: {
+        stories: response.data.data.stories,
+        pagination: response.data.data.pagination || { last_page: 1 },
+      },
+    };
+  } catch (error) {
+    console.error("Error fetching newest stories:", error);
+    throw error;
+  }
+};
+
+export const fetchByPopluar = async () => {
+  try {
+    const response = await apiClient.get("/stories/popular");
+    console.log("Popluar Stories:", response.data.data.stories);
+    return {
+      data: {
+        stories: response.data.data.stories,
+        pagination: response.data.data.pagination || { last_page: 1 },
+      },
+    };
+  } catch (error) {
+    console.error("Error fetching popluar stories:", error);
+    throw error;
+  }
+};
+
+export const fetchCategories = async () => {
   try {
     const response = await apiClient.get("/categories", {
       headers: {
         "ngrok-skip-browser-warning": "69420",
-        Authorization: `Bearer ${token}`,
       },
     });
 
@@ -256,7 +287,7 @@ export const fetchCategories = async (token) => {
 
 export const fetchStoriesByCategoryId = async (categoryId, token) => {
   try {
-    const response = await apiClient.get(`/story-by-category/${categoryId}`, {
+    const response = await apiClient.get(`stories/category/${categoryId}`, {
       headers: {
         Authorization: `Bearer ${token}`,
         "ngrok-skip-browser-warning": "69420",
@@ -306,6 +337,34 @@ export const fetchUserBookmarks = async (userId, token) => {
     return response.data;
   } catch (error) {
     console.error("Error fetching user bookmarks:", error);
+    throw error;
+  }
+};
+
+export const fetchStoriesByCategoryAndSort = async (
+  categoryId,
+  sortOrder,
+  token
+) => {
+  try {
+    const response = await apiClient.get(
+      `/stories/${sortOrder}?category_id=${categoryId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    console.log("Stories Response:", response.data);
+    return {
+      data: {
+        stories: response.data.data,
+        pagination: response.data.pagination || { last_page: 1 },
+      },
+    };
+  } catch (error) {
+    console.error("Error fetching stories by category and sort:", error);
     throw error;
   }
 };

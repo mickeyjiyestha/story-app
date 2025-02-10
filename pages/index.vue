@@ -271,7 +271,7 @@ const searchStories = async () => {
 onMounted(async () => {
   try {
     // Fetch semua cerita
-    const storiesData = await fetchAllStories(token, apiBaseUrl);
+    const storiesData = await fetchAllStories();
     if (storiesData && Array.isArray(storiesData)) {
       stories.value = storiesData;
       console.log("Fetched All Stories:", stories.value);

@@ -7,7 +7,7 @@
     <div class="card" style="cursor: pointer" @click="navigateToStory">
       <div class="image-container position-relative">
         <img
-          :src="getImageUrl(story.images[0].url)"
+          :src="getImageUrl(story.images[0]?.url)"
           class="card-img-top card-image"
           alt="Story Image"
         />

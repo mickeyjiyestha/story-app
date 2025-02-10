@@ -72,7 +72,7 @@
               class="search-input"
               placeholder="Search Story"
               v-model="searchKeyword"
-              @keyup.enter="handleSearch"
+              @input="debouncedSearch"
             />
             <i class="fas fa-search search-icon" @click="handleSearch"></i>
           </div>
@@ -106,6 +106,8 @@ import { ref, onMounted, computed, watch } from "vue";
 import {
   fetchAllStories,
   fetchStoriesByLatest,
+  fetchByNewest,
+  fetchByPopluar,
   fetchSortedStories,
   fetchCategories,
   fetchStoriesByCategoryId,
@@ -215,11 +217,13 @@ export default {
       try {
         let stories;
         if (sortOption === "Newest") {
-          stories = await fetchStoriesByLatest();
+          stories = await fetchByNewest();
         } else if (sortOption === "A - Z") {
           stories = await fetchSortedStories("asc");
         } else if (sortOption === "Z - A") {
           stories = await fetchSortedStories("desc");
+        } else if (sortOption === "Popular") {
+          stories = await fetchByPopluar();
         }
 
         if (stories && stories.data) {
