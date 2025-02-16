@@ -61,7 +61,7 @@ const authStore = useAuthStore();
 
 const getImageUrl = (url) => {
   if (!url) return "/default-image.jpg";
-  const apiBaseUrl = "https://2a97-103-175-215-200.ngrok-free.app";
+  const apiBaseUrl = "https://f510-103-19-231-211.ngrok-free.app ";
   return `${apiBaseUrl}${url}`;
 };
 
@@ -71,7 +71,7 @@ const truncateContent = (content) => {
 };
 
 const handleBookmark = async () => {
-  const apiBaseUrl = "https://2a97-103-175-215-200.ngrok-free.app";
+  const apiBaseUrl = "https://f510-103-19-231-211.ngrok-free.app ";
   const token = authStore.token;
   const storyId = props.story.id;
 
@@ -115,7 +115,7 @@ const deleteStory = async (storyId) => {
     }
 
     const response = await axios.delete(
-      `https://2a97-103-175-215-200.ngrok-free.app/api/stories/${storyId}`,
+      `https://f510-103-19-231-211.ngrok-free.app /api/stories/${storyId}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,

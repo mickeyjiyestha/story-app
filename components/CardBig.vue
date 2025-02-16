@@ -54,7 +54,7 @@ const props = defineProps({
 });
 
 const getImageUrl = (url) => {
-  const apiBaseUrl = "https://2a97-103-175-215-200.ngrok-free.app";
+  const apiBaseUrl = "https://f510-103-19-231-211.ngrok-free.app ";
   return url ? `${apiBaseUrl}${url}` : "/path/to/default-image.jpg";
 };
 
