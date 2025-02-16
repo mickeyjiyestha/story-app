@@ -148,12 +148,12 @@ const prevImage = () => {
 };
 
 const getImageUrl = (url) => {
-  const apiBaseUrl = "https://2ee9-103-100-175-121.ngrok-free.app"; // Base URL API
+  const apiBaseUrl = "https://2a97-103-175-215-200.ngrok-free.app"; // Base URL API
   return `${apiBaseUrl}${url}`;
 };
 
 const fetchStoryDetail = async (id) => {
-  const apiBaseUrl = "https://2ee9-103-100-175-121.ngrok-free.app"; // Base URL API
+  const apiBaseUrl = "https://2a97-103-175-215-200.ngrok-free.app"; // Base URL API
 
   try {
     const response = await axios.get(
@@ -358,7 +358,7 @@ watch(
 
 .card-container {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 30px;
   padding: 20px 0;
 }

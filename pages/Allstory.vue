@@ -102,7 +102,7 @@
 </template>
 
 <script>
-import { ref, onMounted, computed, watch } from "vue";
+import { ref, onMounted, watch } from "vue";
 import {
   fetchAllStories,
   fetchStoriesByLatest,
@@ -112,12 +112,18 @@ import {
   fetchCategories,
   fetchStoriesByCategoryId,
   fetchStoriesByKeyword,
+  fetchStoriesByCategoryAndSort,
 } from "~/services/apiService";
 import { useAuthStore } from "@/stores/authStore";
 import { useRoute, useRouter } from "vue-router";
 import Pagination from "@/components/Pagination.vue";
+import Card from "@/components/Card.vue";
 
 export default {
+  components: {
+    Pagination,
+    Card,
+  },
   setup() {
     const route = useRoute();
     const router = useRouter();
@@ -128,6 +134,8 @@ export default {
     const isCategoryDropdownOpen = ref(false);
     const allStories = ref([]);
     const categories = ref([]);
+    const currentCategoryId = ref(null);
+    const currentSortOrder = ref(null);
     const searchKeyword = ref(
       Array.isArray(route.query.keyword)
         ? route.query.keyword[0] || ""
@@ -137,7 +145,6 @@ export default {
     const itemsPerPage = 12;
     const totalPages = ref(1);
 
-    // Scroll to top when route changes
     watch(
       () => route.fullPath,
       () => {
@@ -151,14 +158,28 @@ export default {
     const handleSearch = async () => {
       if (searchKeyword.value.trim()) {
         try {
-          const results = await fetchStoriesByKeyword(
-            searchKeyword.value.trim()
-          );
+          let results;
+
+          if (currentCategoryId.value && currentSortOrder.value) {
+            results = await fetchStoriesByCategoryAndSort(
+              currentCategoryId.value,
+              currentSortOrder.value,
+              authStore.token,
+              searchKeyword.value.trim()
+            );
+          } else if (currentCategoryId.value) {
+            results = await fetchStoriesByCategoryId(
+              currentCategoryId.value,
+              authStore.token,
+              searchKeyword.value.trim()
+            );
+          } else {
+            results = await fetchStoriesByKeyword(searchKeyword.value.trim());
+          }
+
           if (results && results.data && Array.isArray(results.data.stories)) {
             allStories.value = results.data.stories;
             totalPages.value = results.data.pagination.last_page;
-
-            // Update URL with search query
             router.push({
               query: { ...route.query, keyword: searchKeyword.value.trim() },
             });
@@ -172,7 +193,19 @@ export default {
     const loadSearchResults = async () => {
       if (searchKeyword.value) {
         try {
-          const results = await fetchStoriesByKeyword(searchKeyword.value);
+          let results;
+
+          if (currentCategoryId.value && currentSortOrder.value) {
+            results = await fetchStoriesByCategoryAndSort(
+              currentCategoryId.value,
+              currentSortOrder.value,
+              authStore.token,
+              searchKeyword.value.trim()
+            );
+          } else {
+            results = await fetchStoriesByKeyword(searchKeyword.value.trim());
+          }
+
           if (results && results.data && Array.isArray(results.data.stories)) {
             allStories.value = results.data.stories;
             totalPages.value = results.data.pagination.last_page;
@@ -191,7 +224,6 @@ export default {
           allStories.value = storiesData.stories;
           totalPages.value = storiesData.pagination.last_page;
         }
-        // Scroll to top after page change
         window.scrollTo({
           top: 0,
           behavior: "smooth",
@@ -216,19 +248,33 @@ export default {
 
       try {
         let stories;
-        if (sortOption === "Newest") {
-          stories = await fetchByNewest();
-        } else if (sortOption === "A - Z") {
-          stories = await fetchSortedStories("asc");
+        let sortOrder;
+
+        if (sortOption === "A - Z") {
+          sortOrder = "asc";
         } else if (sortOption === "Z - A") {
-          stories = await fetchSortedStories("desc");
+          sortOrder = "desc";
+        } else if (sortOption === "Newest") {
+          sortOrder = "newest";
         } else if (sortOption === "Popular") {
-          stories = await fetchByPopluar();
+          sortOrder = "popular";
         }
 
-        if (stories && stories.data) {
+        if (currentCategoryId.value && sortOrder) {
+          stories = await fetchStoriesByCategoryAndSort(
+            currentCategoryId.value,
+            sortOrder,
+            authStore.token,
+            searchKeyword.value.trim() // Sertakan keyword jika ada
+          );
+        } else if (sortOrder) {
+          stories = await fetchSortedStories(sortOrder);
+        }
+
+        if (stories && stories.data && Array.isArray(stories.data.stories)) {
           allStories.value = stories.data.stories;
           totalPages.value = stories.data.pagination.last_page;
+          currentSortOrder.value = sortOrder;
         }
       } catch (error) {
         console.error(`Error fetching ${sortOption} stories:`, error);
@@ -244,15 +290,36 @@ export default {
         (cat) => cat.name === category
       )?.id;
       if (categoryId) {
+        console.log("Selected Category ID:", categoryId); // Logging untuk debugging
+
         try {
-          const response = await fetchStoriesByCategoryId(
-            categoryId,
-            authStore.token
-          );
-          if (response && response.data) {
+          let response;
+
+          if (currentSortOrder.value) {
+            response = await fetchStoriesByCategoryAndSort(
+              categoryId,
+              currentSortOrder.value,
+              authStore.token,
+              searchKeyword.value.trim()
+            );
+          } else {
+            response = await fetchStoriesByCategoryId(
+              categoryId,
+              authStore.token,
+              searchKeyword.value.trim()
+            );
+          }
+
+          if (
+            response &&
+            response.data &&
+            Array.isArray(response.data.stories)
+          ) {
             allStories.value = response.data.stories;
             totalPages.value = response.data.pagination.last_page;
           }
+
+          currentCategoryId.value = categoryId;
         } catch (error) {
           console.error("Error fetching stories by category:", error);
         }
@@ -295,7 +362,7 @@ export default {
     watch(searchKeyword, () => {
       if (!searchKeyword.value) {
         loadStories(1);
-        router.push({ query: {} }); // Clear search query from URL
+        router.push({ query: {} });
       }
     });
 

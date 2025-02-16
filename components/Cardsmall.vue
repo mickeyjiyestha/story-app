@@ -58,7 +58,7 @@ const props = defineProps({
 });
 
 const getImageUrl = (url) => {
-  const apiBaseUrl = "https://2ee9-103-100-175-121.ngrok-free.app";
+  const apiBaseUrl = "https://2a97-103-175-215-200.ngrok-free.app";
   return `${apiBaseUrl}${url}`;
 };
 

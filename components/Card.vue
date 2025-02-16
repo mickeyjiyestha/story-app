@@ -11,8 +11,15 @@
           class="card-img-top card-image"
           alt="Story Image"
         />
-        <div class="bookmark-icon" @click.stop="handleBookmark">
-          <bookmark :class="{ 'bookmark-icon-black': isBookmarked }"></bookmark>
+        <div
+          class="bookmark-icon"
+          :class="{ 'white-background': isBookmarked }"
+          @click.stop="handleBookmark"
+        >
+          <bookmark
+            :isBookmarked="isBookmarked"
+            @click.stop="toggleBookmark"
+          ></bookmark>
         </div>
       </div>
       <div class="card-body">
@@ -45,11 +52,13 @@
 
 <script setup>
 import { defineProps } from "vue";
+import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/authStore";
 import { useRuntimeConfig } from "#app";
 
 const router = useRouter();
+const isBookmarked = ref(false);
 const authStore = useAuthStore();
 const config = useRuntimeConfig();
 
@@ -82,6 +91,11 @@ const truncateContent = (content) => {
     return content.length > 100 ? content.slice(0, 100) + "..." : content;
   }
   return content.length > 200 ? content.slice(0, 200) + "..." : content;
+};
+
+const toggleBookmark = () => {
+  isBookmarked.value = !isBookmarked.value; // Toggle status bookmark
+  handleBookmark(); // Panggil fungsi bookmark
 };
 
 const navigateToStory = () => {
@@ -125,7 +139,7 @@ const handleBookmark = async () => {
 <style scoped>
 /* Desktop Styles */
 .card-wrapper {
-  width: 500px;
+  width: 450px;
   flex-shrink: 0;
   margin: 0 15px;
 }
@@ -140,6 +154,10 @@ const handleBookmark = async () => {
 
 .card:hover .card-title {
   color: green;
+}
+
+.white-background {
+  background-color: white !important; /* Warna putih */
 }
 
 .image-container {

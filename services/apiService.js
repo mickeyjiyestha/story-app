@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const apiClient = axios.create({
-  baseURL: "https://2ee9-103-100-175-121.ngrok-free.app/api",
+  baseURL: "https://2a97-103-175-215-200.ngrok-free.app/api",
   headers: {
     "Content-Type": "application/json",
     "ngrok-skip-browser-warning": "69420",
@@ -94,7 +94,7 @@ export const fetchAllStories = async (page = 1) => {
 export const fetchStoriesByKeyword = async (keyword) => {
   try {
     const response = await apiClient.get(
-      `/all-stories?keyword=${encodeURIComponent(keyword)}`
+      `/stories/all?keyword=${encodeURIComponent(keyword)}`
     );
 
     console.log("Parsed API Response:", response.data);
@@ -210,22 +210,6 @@ export const fetchStoriesByHorror = async () => {
   }
 };
 
-export const fetchSortedStories = async (order = "asc") => {
-  try {
-    const response = await apiClient.get(`/stories/sort?sort=${order}`);
-    console.log("Sorted Stories:", response.data.data.stories);
-    return {
-      data: {
-        stories: response.data.data.stories,
-        pagination: response.data.data.pagination || { last_page: 1 },
-      },
-    };
-  } catch (error) {
-    console.error(`Error fetching sorted stories (${order}):`, error);
-    throw error;
-  }
-};
-
 export const fetchByNewest = async () => {
   try {
     const response = await apiClient.get("/stories/newest");
@@ -258,29 +242,18 @@ export const fetchByPopluar = async () => {
   }
 };
 
-export const fetchCategories = async () => {
+export const fetchSortedStories = async (order = "asc") => {
   try {
-    const response = await apiClient.get("/categories", {
-      headers: {
-        "ngrok-skip-browser-warning": "69420",
+    const response = await apiClient.get(`/stories/sort?sort=${order}`);
+    console.log("Sorted Stories:", response.data.data.stories);
+    return {
+      data: {
+        stories: response.data.data.stories,
+        pagination: response.data.data.pagination || { last_page: 1 },
       },
-    });
-
-    console.log("Raw API Response:", response);
-
-    if (
-      response.status === 200 &&
-      response.data &&
-      Array.isArray(response.data.categories)
-    ) {
-      console.log("Categories:", response.data.categories);
-      return response.data.categories;
-    } else {
-      console.log("No categories found in the response.");
-      return [];
-    }
+    };
   } catch (error) {
-    console.error("Error fetching categories:", error);
+    console.error(`Error fetching sorted stories (${order}):`, error);
     throw error;
   }
 };
@@ -324,6 +297,78 @@ export const fetchStoriesByCategoryId = async (categoryId, token) => {
   }
 };
 
+export const fetchStoriesByCategoryAndSort = async (
+  categoryId,
+  sortOrder,
+  token,
+  keyword = ""
+) => {
+  try {
+    // Log parameter yang dikirimkan
+    console.log("Fetching stories with params:", {
+      categoryId,
+      sortOrder,
+      keyword,
+    });
+
+    // Bangun URL untuk request
+    const url = `/stories/filter?search=${keyword}&category_id=${categoryId}&filter=${sortOrder}`;
+    console.log("Constructed API URL:", url); // Pastikan ini sebelum request
+
+    // Kirim request ke backend
+    const response = await apiClient.get(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    // Log raw response dari backend
+    console.log("Raw API Response:", response);
+
+    // Log data yang diterima dari backend
+    console.log("API Response Data:", response.data);
+
+    // Transformasi data untuk frontend
+    return {
+      data: {
+        stories: response.data.data.stories || [],
+        pagination: response.data.data.pagination || { last_page: 1 },
+      },
+    };
+  } catch (error) {
+    // Log error jika terjadi masalah
+    console.error("Error fetching stories by category and sort:", error);
+    throw error;
+  }
+};
+
+export const fetchCategories = async () => {
+  try {
+    const response = await apiClient.get("/categories", {
+      headers: {
+        "ngrok-skip-browser-warning": "69420",
+      },
+    });
+
+    console.log("Raw API Response:", response);
+
+    if (
+      response.status === 200 &&
+      response.data &&
+      Array.isArray(response.data.categories)
+    ) {
+      console.log("Categories:", response.data.categories);
+      return response.data.categories;
+    } else {
+      console.log("No categories found in the response.");
+      return [];
+    }
+  } catch (error) {
+    console.error("Error fetching categories:", error);
+    throw error;
+  }
+};
+
 export const fetchUserBookmarks = async (userId, token) => {
   try {
     const response = await apiClient.get("/bookmarks", {
@@ -337,34 +382,6 @@ export const fetchUserBookmarks = async (userId, token) => {
     return response.data;
   } catch (error) {
     console.error("Error fetching user bookmarks:", error);
-    throw error;
-  }
-};
-
-export const fetchStoriesByCategoryAndSort = async (
-  categoryId,
-  sortOrder,
-  token
-) => {
-  try {
-    const response = await apiClient.get(
-      `/stories/${sortOrder}?category_id=${categoryId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-
-    console.log("Stories Response:", response.data);
-    return {
-      data: {
-        stories: response.data.data,
-        pagination: response.data.pagination || { last_page: 1 },
-      },
-    };
-  } catch (error) {
-    console.error("Error fetching stories by category and sort:", error);
     throw error;
   }
 };
