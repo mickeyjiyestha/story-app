@@ -11,14 +11,26 @@
           class="card-img-top card-image"
           alt="Story Image"
         />
-        <div class="bookmark-icon" @click.stop="handleBookmark">
-          <bookmark :class="{ 'bookmark-icon-black': isBookmarked }"></bookmark>
+        <div
+          class="bookmark-icon"
+          :class="[
+            { 'white-background': isBookmarked },
+            !isBookmarked ? 'with-delete' : 'without-delete',
+          ]"
+          @click.stop="handleBookmark"
+        >
+          <bookmark
+            :isBookmarked="isBookmarked"
+            @click.stop="toggleBookmark"
+          ></bookmark>
         </div>
         <delete
+          v-if="!isBookmarked"
           class="delete-icon"
           @click.stop="deleteStory(story.id)"
         ></delete>
         <Edit
+          v-if="!isBookmarked"
           class="edit-icon"
           @click.stop="navigateToEditStory(story.id)"
         ></Edit>
@@ -54,15 +66,19 @@ const props = defineProps({
     type: Object,
     required: true,
   },
+  isBookmarkView: {
+    type: Boolean,
+    default: false,
+  },
 });
 
+const isBookmarked = ref(props.isBookmarkView);
 const router = useRouter();
 const authStore = useAuthStore();
+const config = useRuntimeConfig();
 
 const getImageUrl = (url) => {
-  if (!url) return "/default-image.jpg";
-  const apiBaseUrl = "https://f510-103-19-231-211.ngrok-free.app ";
-  return `${apiBaseUrl}${url}`;
+  return url ? `${config.public.apiBaseUrl}${url}` : "/default-image.jpg";
 };
 
 const truncateContent = (content) => {
@@ -71,21 +87,24 @@ const truncateContent = (content) => {
 };
 
 const handleBookmark = async () => {
-  const apiBaseUrl = "https://f510-103-19-231-211.ngrok-free.app ";
   const token = authStore.token;
   const storyId = props.story.id;
 
   try {
-    const response = await fetch(`${apiBaseUrl}/api/bookmarks/${storyId}`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-        "ngrok-skip-browser-warning": "69420",
-      },
-    });
+    const response = await fetch(
+      `${config.public.apiBaseUrl}/api/bookmarks/${storyId}`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+          "ngrok-skip-browser-warning": "69420",
+        },
+      }
+    );
 
     if (response.ok) {
+      isBookmarked.value = !isBookmarked.value;
       location.reload();
     } else {
       const errorData = await response.json();
@@ -107,15 +126,14 @@ const navigateToEditStory = (storyId) => {
 
 const deleteStory = async (storyId) => {
   try {
-    const token = useAuthStore().token;
-
+    const token = authStore.token;
     if (!token) {
       console.error("No authentication token found.");
       return;
     }
 
     const response = await axios.delete(
-      `https://f510-103-19-231-211.ngrok-free.app /api/stories/${storyId}`,
+      `${config.public.apiBaseUrl}/api/stories/${storyId}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -132,14 +150,26 @@ const deleteStory = async (storyId) => {
     );
   }
 };
+
+const toggleBookmark = () => {
+  isBookmarked.value = !isBookmarked.value;
+  handleBookmark();
+};
 </script>
 
 <style scoped>
-/* Desktop styles remain unchanged */
 .p-date {
   font-size: 20px;
   white-space: nowrap;
   margin-left: auto;
+}
+
+.white-background {
+  background-color: white !important;
+}
+
+.bookmark-icon.without-delete {
+  margin-right: 10px;
 }
 
 .p-username {

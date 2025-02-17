@@ -84,12 +84,12 @@ const images = ref([]);
 const isEditMode = ref(false);
 const storyId = ref(null);
 const deletedImageIds = ref([]);
+const config = useRuntimeConfig();
 
 onMounted(async () => {
-  console.log("Using token:", authStore.token);
   try {
     const response = await axios.get(
-      "https://f510-103-19-231-211.ngrok-free.app /api/categories",
+      `${config.public.apiBaseUrl}/api/categories`,
       {
         headers: {
           Authorization: `Bearer ${authStore.token}`,
@@ -97,7 +97,6 @@ onMounted(async () => {
         },
       }
     );
-    console.log("Categories fetched:", response.data);
     categories.value = response.data.categories;
   } catch (error) {
     console.error("Error fetching categories:", error);
@@ -110,7 +109,7 @@ onMounted(async () => {
     storyId.value = storyIdFromRoute;
     try {
       const response = await axios.get(
-        `https://f510-103-19-231-211.ngrok-free.app /api/stories/${storyIdFromRoute}`,
+        `${config.public.apiBaseUrl}/api/stories/${storyIdFromRoute}`,
         {
           headers: {
             "ngrok-skip-browser-warning": "69420",
@@ -118,18 +117,13 @@ onMounted(async () => {
           },
         }
       );
-
-      console.log("Story response:", response.data);
       const story = response.data.data.stories;
       title.value = story.title || "";
       content.value = story.content || "";
       selectedCategory.value = story.category || null;
-
       images.value = story.images
         ? story.images.map((image) => ({
-            url: image.url
-              ? `https://f510-103-19-231-211.ngrok-free.app ${image.url}`
-              : "",
+            url: image.url ? `${config.public.apiBaseUrl}${image.url}` : "",
             id: image.id,
           }))
         : [];
@@ -195,7 +189,6 @@ const uploadStory = async () => {
   formData.append("title", title.value);
   formData.append("content", content.value);
   formData.append("category_id", selectedCategory.value.id);
-
   images.value.forEach((image) => {
     if (image instanceof File) {
       formData.append("images[]", image);
@@ -204,40 +197,28 @@ const uploadStory = async () => {
 
   if (isEditMode.value) {
     formData.append("_method", "PUT");
-    console.log("Deleted image IDs before append:", deletedImageIds.value);
-
     deletedImageIds.value.forEach((id) => {
       formData.append("delete_images[]", id.toString());
-      console.log("Appending delete_images[]:", id);
     });
-
-    for (let pair of formData.entries()) {
-      console.log(pair[0], pair[1]);
-    }
   }
 
   try {
     const url = isEditMode.value
-      ? `https://f510-103-19-231-211.ngrok-free.app /api/stories/${storyId.value}`
-      : "https://f510-103-19-231-211.ngrok-free.app /api/stories";
+      ? `${config.public.apiBaseUrl}/api/stories/${storyId.value}`
+      : `${config.public.apiBaseUrl}/api/stories`;
 
-    console.log("Sending request to:", url);
     const response = await axios.post(url, formData, {
       headers: {
         "Content-Type": "multipart/form-data",
         Authorization: `Bearer ${authStore.token}`,
       },
     });
-    console.log("Story uploaded successfully:", response.data);
 
-    // Show success toast based on mode
     toast.success(
       isEditMode.value
         ? "Story updated successfully!"
         : "Story created successfully!"
     );
-
-    // Redirect after a short delay to ensure toast is visible
     setTimeout(() => {
       router.push("/userprofile");
     }, 1500);

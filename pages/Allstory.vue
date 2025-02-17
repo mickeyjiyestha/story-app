@@ -27,7 +27,9 @@
         <p class="first-hero-child">Home</p>
       </nuxt-link>
       <p class="hero-child">/</p>
-      <p class="hero-child">All Story</p>
+      <nuxt-link to="/allstory">
+        <p class="hero-child">All Story</p>
+      </nuxt-link>
     </div>
     <div class="hero mt-5 container-fluid">
       <div class="d-flex justify-content-between align-items-center">
@@ -142,7 +144,6 @@ export default {
         : route.query.keyword || ""
     );
     const currentPage = ref(1);
-    const itemsPerPage = 12;
     const totalPages = ref(1);
 
     watch(
@@ -255,9 +256,9 @@ export default {
         } else if (sortOption === "Z - A") {
           sortOrder = "desc";
         } else if (sortOption === "Newest") {
-          sortOrder = "newest";
+          stories = await fetchByNewest(authStore.token);
         } else if (sortOption === "Popular") {
-          sortOrder = "popular";
+          stories = await fetchByPopluar(authStore.token);
         }
 
         if (currentCategoryId.value && sortOrder) {
@@ -340,18 +341,30 @@ export default {
 
     onMounted(async () => {
       try {
-        if (route.query.keyword) {
-          await loadSearchResults();
-        } else {
-          await loadStories(currentPage.value);
-        }
-
         const token = authStore.token;
         if (!token) {
           console.error("No token found. Please log in again.");
           return;
         }
 
+        // Ambil query parameter
+        const categoryId = route.query.categoryId;
+        const keyword = route.query.keyword;
+
+        if (categoryId) {
+          // Fetch cerita berdasarkan categoryId
+          const result = await fetchStoriesByCategoryId(categoryId, token);
+          allStories.value = result.data.stories;
+          totalPages.value = result.data.pagination.last_page;
+        } else if (keyword) {
+          // Fetch cerita berdasarkan keyword
+          await loadSearchResults();
+        } else {
+          // Jika tidak ada categoryId atau keyword, tampilkan semua cerita
+          await loadStories(currentPage.value);
+        }
+
+        // Fetch categories untuk dropdown
         const categoriesData = await fetchCategories(token);
         categories.value = categoriesData;
       } catch (error) {
@@ -416,6 +429,8 @@ export default {
 .hero-child {
   margin-left: 30px;
   font-size: 20px;
+  text-decoration: none;
+  color: black;
 }
 
 .dropdown-category,
@@ -443,6 +458,7 @@ export default {
 
 .search-container {
   margin-left: auto;
+  margin-right: 80px;
 }
 
 .search-box {
@@ -453,17 +469,19 @@ export default {
 
 .search-input {
   width: 100%;
-  padding: 10px 40px 10px 20px;
+  padding: 10px 40px 10px 20px; /* Padding kanan disesuaikan untuk ikon */
   border: 1px solid #ccc;
   border-radius: 5px;
+  box-sizing: border-box; /* Pastikan padding tidak memengaruhi lebar total */
 }
 
 .search-icon {
   position: absolute;
-  left: 10px;
+  right: 10px; /* Pindahkan ke kanan */
   top: 50%;
   transform: translateY(-50%);
   color: #aaa;
+  cursor: pointer; /* Tambahkan efek pointer saat hover */
 }
 
 .dropdown-menu {

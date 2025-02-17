@@ -54,13 +54,15 @@
     <div class="d-flex container-menu">
       <Buttoncategory
         label="My Story"
-        backgroundColor="#d9f8c4"
-        @click="loadUserStories"
+        :backgroundColor="activeTab === 'myStory' ? '#d9f8c4' : '#ffffff'"
+        :underline="activeTab === 'myStory'"
+        @click="setActiveTab('myStory')"
       />
       <Buttoncategory
         label="Bookmark"
-        backgroundColor="#f8d9e0"
-        @click="loadBookmarks"
+        :backgroundColor="activeTab === 'bookmark' ? '#f8d9e0' : '#ffffff'"
+        :underline="activeTab === 'bookmark'"
+        @click="setActiveTab('bookmark')"
       />
     </div>
 
@@ -90,6 +92,7 @@
               :imageSrc="story.image"
               :profilePic="story.profilePic"
               @deleteStory="handleDeleteStory"
+              :isBookmarkView="isBookmarkView"
             ></Carduser>
           </div>
         </div>
@@ -217,6 +220,7 @@
                 <input-box
                   v-model="password"
                   placeholder="Enter your old password"
+                  type="password"
                 ></input-box>
               </div>
               <div class="form-group mb-4">
@@ -225,6 +229,7 @@
                 >
                 <input-box
                   v-model="newPassword"
+                  type="password"
                   placeholder="Enter your new password"
                 ></input-box>
               </div>
@@ -234,6 +239,7 @@
                 >
                 <input-box
                   v-model="confirm_password"
+                  type="password"
                   placeholder="Enter your new password"
                 ></input-box>
               </div>
@@ -283,6 +289,7 @@ const user = authStore.user;
 const toast = useToast(); // Gunakan vue-toastification
 const fileToUpload = ref(null);
 const previewUrl = ref(null);
+const activeTab = ref("myStory"); // Default ke "My Story"
 
 const name = ref("");
 const email = ref("");
@@ -292,19 +299,29 @@ const password = ref("");
 const newPassword = ref("");
 const confirm_password = ref("");
 
-const stories = ref([]); // Store user stories
-const bookmarks = ref([]); // Store user bookmarks
-const currentPage = ref(1); // Track current page
-const totalPages = ref(1); // Initialize totalPages with 1
-const hasMoreStories = ref(true); // Track if there are more stories
-const isBookmarkView = ref(false); // Track if bookmarks are being viewed
+const stories = ref([]);
+const bookmarks = ref([]);
+const currentPage = ref(1);
+const totalPages = ref(1);
+const hasMoreStories = ref(true);
+const isBookmarkView = ref(false);
 
 const goToDetail = (id) => {
-  router.push({ name: "Detail", params: { id } }); // Navigate to Detail page with story ID
+  router.push({ name: "Detail", params: { id } });
 };
 
 const addStory = () => {
   router.push("/addstory");
+};
+
+const setActiveTab = (tab) => {
+  activeTab.value = tab;
+  isBookmarkView.value = tab === "bookmark";
+  if (tab === "myStory") {
+    loadUserStories();
+  } else {
+    loadBookmarks();
+  }
 };
 
 const loadUserStories = async () => {
@@ -529,6 +546,7 @@ const handleDeleteStory = (storyId) => {
 };
 
 const loadStories = async (page) => {
+  isBookmarkView.value = false;
   const userId = authStore.user?.id; // Ensure user ID is available
   const config = useRuntimeConfig();
   const apiBaseUrl = config.public.apiBaseUrl; // Get the public API base URL
@@ -565,6 +583,7 @@ const loadStories = async (page) => {
 };
 
 const loadBookmarks = async () => {
+  isBookmarkView.value = true;
   const userId = authStore.user?.id;
   const token = authStore.token;
   const config = useRuntimeConfig();
@@ -637,6 +656,20 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+button[underline="true"] {
+  position: relative;
+}
+
+button[underline="true"]::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -5px;
+  width: 100%;
+  height: 2px;
+  background-color: #000;
+}
+
 .modal-content {
   padding: 2rem;
 }

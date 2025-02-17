@@ -11,7 +11,16 @@
           class="card-img-top card-image"
           alt="Story Image"
         />
-        <bookmark class="bookmark-icon"></bookmark>
+        <div
+          class="bookmark-icon"
+          :class="{ 'white-background': isBookmarked }"
+          @click.stop="handleBookmark"
+        >
+          <bookmark
+            :isBookmarked="isBookmarked"
+            @click.stop="toggleBookmark"
+          ></bookmark>
+        </div>
       </div>
       <div class="card-body">
         <h5 class="card-title">{{ story.title || "Untitled" }}</h5>
@@ -45,6 +54,7 @@ import { useAuthStore } from "#build/imports";
 const router = useRouter();
 const authStore = useAuthStore();
 const config = useRuntimeConfig();
+const isBookmarked = ref(false);
 
 const props = defineProps({
   story: {
@@ -58,10 +68,12 @@ const props = defineProps({
 });
 
 const getImageUrl = (url) => {
-  const apiBaseUrl = "https://f510-103-19-231-211.ngrok-free.app ";
-  return `${apiBaseUrl}${url}`;
+  return url
+    ? `${config.public.apiBaseUrl}${url}`
+    : "/path/to/default-image.jpg";
 };
 
+// Fungsi untuk mendapatkan URL avatar
 const getUserAvatarUrl = (avatar) => {
   if (!avatar) return "/path/to/default-avatar.jpg";
   if (avatar.startsWith("http")) return avatar;
@@ -71,6 +83,33 @@ const getUserAvatarUrl = (avatar) => {
 const truncateContent = (content) => {
   if (!content) return "No content available";
   return content.length > 200 ? content.slice(0, 200) + "..." : content;
+};
+
+const toggleBookmark = () => {
+  isBookmarked.value = !isBookmarked.value; // Toggle status bookmark
+  handleBookmark(); // Panggil fungsi bookmark
+};
+
+const handleBookmark = async () => {
+  const token = authStore.token;
+  const storyId = props.story.id;
+
+  try {
+    const response = await fetch(
+      `${config.public.apiBaseUrl}/api/bookmarks/${storyId}`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+          "ngrok-skip-browser-warning": "69420",
+        },
+      }
+    );
+  } catch (error) {
+    console.error("Error bookmarking story:", error);
+    alert("An error occurred while bookmarking the story.");
+  }
 };
 
 const navigateToStory = () => {
@@ -91,6 +130,10 @@ const navigateToStory = () => {
 .card {
   border: none;
   width: 547px;
+}
+
+.white-background {
+  background-color: white !important; /* Warna putih */
 }
 
 .card-title {

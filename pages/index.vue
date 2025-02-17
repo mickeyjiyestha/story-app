@@ -90,11 +90,9 @@
     <div>
       <div class="d-flex justify-content-between section-header">
         <h1 class="text-comedy">Comedy</h1>
-        <nuxt-link to="/allstory">
-          <p class="text-explore">
-            Explore More <i class="fa-solid fa-arrow-right"></i>
-          </p>
-        </nuxt-link>
+        <p class="text-explore" @click="navigateToCategory(2)">
+          Explore More <i class="fa-solid fa-arrow-right"></i>
+        </p>
       </div>
       <div class="latest-container">
         <hr class="custom-hr" />
@@ -115,11 +113,9 @@
     <div>
       <div class="d-flex justify-content-between section-header">
         <h1 class="text-romance">Romance</h1>
-        <nuxt-link to="/allstory">
-          <p class="text-explore">
-            Explore More <i class="fa-solid fa-arrow-right"></i>
-          </p>
-        </nuxt-link>
+        <p class="text-explore" @click="navigateToCategory(3)">
+          Explore More <i class="fa-solid fa-arrow-right"></i>
+        </p>
       </div>
       <div class="latest-container">
         <hr class="custom-hr" />
@@ -145,11 +141,9 @@
     <div>
       <div class="d-flex justify-content-between section-header">
         <h1 class="text-horror">Horror</h1>
-        <nuxt-link to="/allstory">
-          <p class="text-explore">
-            Explore More <i class="fa-solid fa-arrow-right"></i>
-          </p>
-        </nuxt-link>
+        <p class="text-explore" @click="navigateToCategory(1)">
+          Explore More <i class="fa-solid fa-arrow-right"></i>
+        </p>
       </div>
       <div class="latest-container">
         <hr class="custom-hr" />
@@ -181,19 +175,27 @@
         <Buttoncategory
           class="btn-category"
           :label="'Fiction'"
+          @click="navigateToCategory(5)"
         ></Buttoncategory>
         <Buttoncategory
           class="btn-category"
           :label="'Fantasy'"
+          @click="navigateToCategory(6)"
         ></Buttoncategory>
-        <Buttoncategory class="btn-category" :label="'Drama'"></Buttoncategory>
+        <Buttoncategory
+          class="btn-category"
+          :label="'Drama'"
+          @click="navigateToCategory(7)"
+        ></Buttoncategory>
         <Buttoncategory
           class="btn-category"
           :label="'Heartfelt'"
+          @click="navigateToCategory(8)"
         ></Buttoncategory>
         <Buttoncategory
           class="btn-category"
           :label="'Mystery'"
+          @click="navigateToCategory(9)"
         ></Buttoncategory>
       </div>
       <hr />
@@ -219,6 +221,7 @@ import {
   fetchStoriesByRomance,
   fetchStoriesByComedy,
   fetchStoriesByHorror,
+  fetchStoriesByCategoryId,
 } from "@/services/apiService";
 import { useRouter } from "vue-router";
 
@@ -227,6 +230,7 @@ const router = useRouter();
 const authStore = useAuthStore();
 const isAuthenticated = computed(() => authStore.isAuthenticated);
 const user = authStore.user;
+console.log("User:", user);
 
 const showLoginModal = ref(false);
 
@@ -237,12 +241,31 @@ const categoryComedy = ref([]);
 const categoryHorror = ref([]);
 const searchKeyword = ref("");
 const searchResults = ref([]);
+const totalPages = ref(1);
+const allStories = ref([]);
 
-const apiBaseUrl = "https://2105-103-100-175-121.ngrok-free.app";
-const token = authStore.token;
+const navigateToCategory = async (categoryId) => {
+  try {
+    const token = authStore.token;
+    if (!token) {
+      throw new Error("Authentication token is missing.");
+    }
 
-const navigateToCategory = (categoryId) => {
-  navigateTo({ path: "/allstory", query: { categoryId } });
+    // Fetch cerita berdasarkan categoryId
+    const result = await fetchStoriesByCategoryId(categoryId, token);
+
+    // Simpan hasil fetch ke state
+    stories.value = result.data.stories;
+    totalPages.value = result.data.pagination.last_page;
+
+    // Navigasi ke halaman /allstory
+    navigateTo({
+      path: "/allstory",
+      query: { categoryId },
+    });
+  } catch (error) {
+    console.error("Error navigating to category:", error);
+  }
 };
 
 const searchStories = async () => {
@@ -423,6 +446,7 @@ if (isAuthenticated.value) {
   float: left;
   text-decoration: none;
   color: black;
+  cursor: pointer;
 }
 
 .text-latest {

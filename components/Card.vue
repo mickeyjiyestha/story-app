@@ -122,13 +122,6 @@ const handleBookmark = async () => {
         },
       }
     );
-
-    if (response.ok) {
-      alert("Story bookmarked successfully!");
-    } else {
-      const errorData = await response.json();
-      alert(`Failed to bookmark story: ${errorData.message}`);
-    }
   } catch (error) {
     console.error("Error bookmarking story:", error);
     alert("An error occurred while bookmarking the story.");

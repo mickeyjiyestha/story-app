@@ -17,7 +17,11 @@
       </div>
       <h1 class="story-title">{{ story?.title || "Untitled" }}</h1>
       <div class="author">
-        <img :src="story?.user?.avatar" alt="Author Avatar" class="avatar" />
+        <img
+          :src="getImageUrl(story?.user?.avatar)"
+          alt="Author Avatar"
+          class="avatar"
+        />
         <p>{{ story?.user?.username || "Unknown" }}</p>
       </div>
     </div>
@@ -124,10 +128,13 @@ const formattedContent = ref([]); // Initialize formatted content
 const similarStories = ref([]); // Initialize similar stories
 const currentImageIndex = ref(0); // State untuk menyimpan indeks gambar saat ini
 const showImageModal = ref(false); // State untuk menampilkan modal gambar
+const config = useRuntimeConfig();
+const authStore = useAuthStore();
 
 const openImageModal = (index) => {
   currentImageIndex.value = index; // Pastikan ini benar
-  showImageModal.value = true; // Tampilkan modal
+  showImage;
+  Modal.value = true; // Tampilkan modal
 };
 
 const toggleImageModal = () => {
@@ -148,28 +155,25 @@ const prevImage = () => {
 };
 
 const getImageUrl = (url) => {
-  const apiBaseUrl = "https://f510-103-19-231-211.ngrok-free.app "; // Base URL API
-  return `${apiBaseUrl}${url}`;
+  return url ? `${config.public.apiBaseUrl}${url}` : "/default-image.jpg";
 };
 
 const fetchStoryDetail = async (id) => {
-  const apiBaseUrl = "https://f510-103-19-231-211.ngrok-free.app "; // Base URL API
-
   try {
     const response = await axios.get(
-      `${apiBaseUrl}/api/stories/${id}`, // Fetch story detail
+      `${config.public.apiBaseUrl}/api/stories/${id}`,
       {
         headers: {
-          Authorization: `Bearer ${useAuthStore().token}`, // Include the token in the request headers
+          Authorization: `Bearer ${authStore.token}`,
           "ngrok-skip-browser-warning": "69420",
         },
       }
     );
 
     if (response.data && response.data.data) {
-      story.value = response.data.data.stories; // Update story with fetched data
-      similarStories.value = response.data.data.simmilarStories; // Ambil cerita yang mirip
-      formatContent(story.value.content); // Format the content into paragraphs
+      story.value = response.data.data.stories;
+      similarStories.value = response.data.data.simmilarStories;
+      formatContent(story.value.content);
     } else {
       console.error("Unexpected response structure:", response.data);
     }
