@@ -36,9 +36,6 @@
           </div>
           <div class="d-flex align-items-center ml-auto">
             <p class="mb-0 p-date">{{ story.created_at }}</p>
-            <div class="category">
-              <p class="mb-0">{{ story.category.name }}</p>
-            </div>
           </div>
         </div>
       </div>

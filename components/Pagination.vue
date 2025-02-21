@@ -50,24 +50,24 @@ const goToNextPage = () => {
 }
 
 button {
-  padding: 15px 20px; /* Adjust padding for better appearance */
+  padding: 15px 20px;
   border: none;
   background-color: #f0f5ed;
   font-size: 20px;
-  border-radius: 35px; /* Make the corners more rounded */
+  border-radius: 35px;
   cursor: pointer;
-  transition: background-color 0.3s; /* Smooth transition for hover effect */
+  transition: background-color 0.3s;
 }
 
 button:hover {
-  background-color: #466543; /* Change background on hover */
+  background-color: #466543;
   color: white;
 }
 
 button.active {
-  background-color: #466543; /* Green background for active page */
+  background-color: #466543;
   color: white;
-  border-radius: 5px; /* Make the corners more rounded */
+  border-radius: 5px;
   border: none;
 }
 

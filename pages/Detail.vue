@@ -11,8 +11,15 @@
     <div class="story-header">
       <div class="container-bookmark">
         <p class="date">{{ story?.created_at || "Date not available" }}</p>
-        <div class="bookmark-icon">
-          <bookmark></bookmark>
+        <div
+          class="bookmark-icon"
+          :class="{ 'white-background': isBookmarked }"
+          @click.stop="handleBookmark"
+        >
+          <bookmark
+            :isBookmarked="isBookmarked"
+            @click.stop="toggleBookmark"
+          ></bookmark>
         </div>
       </div>
       <h1 class="story-title">{{ story?.title || "Untitled" }}</h1>
@@ -53,29 +60,6 @@
       </div>
     </div>
 
-    <div class="similar-stories">
-      <div class="similar-header">
-        <h1 class="text-comedy">Similar Story</h1>
-      </div>
-      <div class="latest-container">
-        <hr class="custom-hr" />
-      </div>
-      <div class="card-container">
-        <div
-          v-for="(similarStory, index) in similarStories"
-          :key="similarStory.id"
-          class="first-card"
-        >
-          <Card
-            :story="similarStory"
-            :imageSrc="getImageUrl(similarStory.images[0]?.url)"
-            :profilePic="similarStory.user.avatar"
-            :link="`/story/${similarStory.id}`"
-          ></Card>
-        </div>
-      </div>
-    </div>
-
     <div v-if="showImageModal" class="image-modal">
       <span class="close" @click="showImageModal = false">&times;</span>
       <img
@@ -100,46 +84,80 @@
         </button>
       </div>
     </div>
-
-    <footer class="footer">
-      <hr />
-      <div class="footer-content">
-        <p>PT. Timedoor Indonesia. All right reserved</p>
-        <div class="social-icons">
-          <img src="@/assets/fb.png" alt="Facebook" />
-          <img src="@/assets/yt.png" alt="YouTube" />
-          <img src="@/assets/ig.png" alt="Instagram" />
-        </div>
-      </div>
-    </footer>
   </div>
+
+  <div class="similar-stories">
+    <div class="similar-header">
+      <h1 class="text-comedy">Similar Story</h1>
+    </div>
+    <div class="latest-container">
+      <hr class="custom-hr" />
+    </div>
+    <div class="card-container">
+      <div
+        v-for="(similarStory, index) in similarStories"
+        :key="similarStory.id"
+        class="first-card"
+      >
+        <Card
+          :story="similarStory"
+          :imageSrc="getImageUrl(similarStory.images[0]?.url)"
+          :profilePic="similarStory.user.avatar"
+          :link="`/story/${similarStory.id}`"
+        ></Card>
+      </div>
+    </div>
+  </div>
+  <footer class="footer">
+    <hr />
+    <div class="footer-content">
+      <p class="copyright">PT. Timedoor Indonesia. All right reserved</p>
+      <div class="social-icons">
+        <img src="@/assets/fb.png" alt="Facebook" />
+        <img src="@/assets/yt.png" alt="YouTube" />
+        <img src="@/assets/ig.png" alt="Instagram" />
+      </div>
+    </div>
+  </footer>
 </template>
 
 <script setup>
 import { ref, onMounted, watch } from "vue";
-import { useRoute } from "vue-router"; // Import useRoute
-import { useAuthStore } from "@/stores/authStore"; // Adjust the import path
+import { useRoute } from "vue-router"; //
+import { useAuthStore } from "@/stores/authStore";
 import axios from "axios";
-import Card from "@/components/Card.vue"; // Pastikan untuk mengimpor komponen Card
+import Card from "@/components/Card.vue";
 
-const route = useRoute(); // Initialize route
-const story = ref(null); // Initialize story object as null
-const formattedContent = ref([]); // Initialize formatted content
-const similarStories = ref([]); // Initialize similar stories
-const currentImageIndex = ref(0); // State untuk menyimpan indeks gambar saat ini
-const showImageModal = ref(false); // State untuk menampilkan modal gambar
+const route = useRoute();
+const isBookmarked = ref(false);
+const story = ref(null);
+const formattedContent = ref([]);
+const similarStories = ref([]);
+const currentImageIndex = ref(0);
+const showImageModal = ref(false);
 const config = useRuntimeConfig();
 const authStore = useAuthStore();
 
+const props = defineProps({
+  story: {
+    type: Object,
+    required: true,
+  },
+  user: {
+    type: Object,
+    required: true,
+  },
+});
+
 const openImageModal = (index) => {
-  currentImageIndex.value = index; // Pastikan ini benar
+  currentImageIndex.value = index; //
   showImage;
-  Modal.value = true; // Tampilkan modal
+  Modal.value = true;
 };
 
 const toggleImageModal = () => {
-  currentImageIndex.value = 0; // Set index ke 0 untuk gambar utama
-  showImageModal.value = true; // Tampilkan modal
+  currentImageIndex.value = 0;
+  showImageModal.value = true;
 };
 
 const nextImage = () => {
@@ -171,7 +189,7 @@ const fetchStoryDetail = async (id) => {
     );
 
     if (response.data && response.data.data) {
-      story.value = response.data.data.stories;
+      story.value = response.data.data.story;
       similarStories.value = response.data.data.simmilarStories;
       formatContent(story.value.content);
     } else {
@@ -189,23 +207,52 @@ const formatContent = (content) => {
     .filter((sentence) => sentence);
 
   const paragraphs = [];
-  const sentencesPerParagraph = 4; // Ubah ke 6 jika ingin 6 kalimat per paragraf
+  const sentencesPerParagraph = 4; //
   for (let i = 0; i < sentences.length; i += sentencesPerParagraph) {
     paragraphs.push(
       sentences.slice(i, i + sentencesPerParagraph).join(". ") + "."
     );
   }
 
-  formattedContent.value = paragraphs; // Simpan paragraf yang diformat
+  formattedContent.value = paragraphs;
 };
 
-// Fetch story detail on component mount
+const handleBookmark = async () => {
+  const token = authStore.token;
+  const storyId = story.value.id;
+
+  try {
+    const response = await fetch(
+      `${config.public.apiBaseUrl}/api/bookmarks/${storyId}`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+          "ngrok-skip-browser-warning": "69420",
+        },
+      }
+    );
+  } catch (error) {
+    console.error("Error bookmarking story:", error);
+    alert("An error occurred while bookmarking the story.");
+  }
+};
+
+const toggleBookmark = () => {
+  if (authStore.isAuthenticated) {
+    isBookmarked.value = !isBookmarked.value; // Toggle status bookmark
+    handleBookmark(); // Panggil fungsi bookmark
+  } else {
+    router.push("/login");
+  }
+};
+
 onMounted(() => {
-  const storyId = route.query.storyId; // Get story ID from query params
+  const storyId = route.query.storyId;
   fetchStoryDetail(storyId);
 });
 
-// Watch for changes in the route query to fetch new story details
 watch(
   () => route.query.storyId,
   (newStoryId) => {
@@ -218,10 +265,12 @@ watch(
 </script>
 
 <style scoped>
-/* Desktop Styles - Unchanged */
+.copyright {
+  margin-left: 160px;
+  font-size: 20px;
+}
+
 .custom-hr {
-  width: 90%;
-  margin: 20px auto;
   border: 1px solid #ccc;
 }
 
@@ -262,6 +311,10 @@ watch(
   align-items: center;
   position: relative;
   margin-bottom: 20px;
+}
+
+.white-background {
+  background-color: white !important; /* Warna putih */
 }
 
 .bookmark-icon {
@@ -351,13 +404,14 @@ watch(
 }
 
 .similar-stories {
-  margin: 60px 0;
+  margin: 60px 60px;
 }
 
 .text-comedy {
   font-family: "Playfair Display", serif;
   font-size: 36px;
   margin-bottom: 20px;
+  margin-left: 10;
 }
 
 .card-container {
@@ -437,11 +491,12 @@ watch(
 .social-icons {
   display: flex;
   gap: 20px;
+  margin-right: 160px;
 }
 
 .social-icons img {
-  width: 24px;
-  height: 24px;
+  width: 44px;
+  height: 44px;
 }
 
 /* Mobile Responsive Styles */

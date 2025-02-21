@@ -1,5 +1,5 @@
 <template>
-  <header>
+  <header class="sticky-top">
     <nav class="navbar navbar-expand-lg navbar-light bg-light px-5 py-4">
       <div
         class="container-fluid d-flex justify-content-between align-items-center"
@@ -60,16 +60,13 @@ const user = authStore.user;
 
 const isDropdownOpen = ref(false);
 
-// Compute full avatar URL
 const avatarUrl = computed(() => {
   if (!user?.avatar) return "/path/to/default-avatar.jpg";
 
-  // Jika avatar sudah berupa URL lengkap, gunakan langsung
   if (user.avatar.startsWith("http")) {
     return user.avatar;
   }
 
-  // Jika avatar hanya path, gabungkan dengan baseUrl
   return `${config.public.apiBaseUrl}${user.avatar}`;
 });
 
@@ -149,6 +146,7 @@ const logout = () => {
 @media screen and (max-width: 768px) {
   .navbar {
     padding: 1rem !important;
+    position: sticky;
   }
 
   .logo-link img {

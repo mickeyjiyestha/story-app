@@ -52,15 +52,18 @@
     </div>
 
     <div class="d-flex container-menu">
+      <!-- Tombol My Story -->
       <Buttoncategory
         label="My Story"
-        :backgroundColor="activeTab === 'myStory' ? '#d9f8c4' : '#ffffff'"
+        :backgroundColor="activeTab === 'myStory' ? '#d9f8c4' : '#f0f0f0'"
         :underline="activeTab === 'myStory'"
         @click="setActiveTab('myStory')"
       />
+
+      <!-- Tombol Bookmark -->
       <Buttoncategory
         label="Bookmark"
-        :backgroundColor="activeTab === 'bookmark' ? '#f8d9e0' : '#ffffff'"
+        :backgroundColor="activeTab === 'bookmark' ? '#d9f8c4' : '#f0f0f0'"
         :underline="activeTab === 'bookmark'"
         @click="setActiveTab('bookmark')"
       />
@@ -78,6 +81,7 @@
         <Buttonfull :buttonText="'Write Now'" @click="addStory"></Buttonfull>
       </div>
       <div>
+        <!-- Kontainer untuk menampilkan daftar cerita atau bookmark -->
         <div
           class="card-container"
           v-if="(isBookmarkView ? bookmarks : stories).length > 0"
@@ -96,13 +100,22 @@
             ></Carduser>
           </div>
         </div>
+
         <div v-else class="containernostories">
-          <h1 class="nostories-h1">No Stories Yet</h1>
+          <h1 class="nostories-h1">
+            {{ isBookmarkView ? "No Bookmarks Yet" : "No Stories Yet" }}
+          </h1>
           <p class="nostories-p">
-            You haven't shared any stories yet. Start your fitness journey
-            today!
+            {{
+              isBookmarkView
+                ? "You have not bookmarked any stories yet. Explore and bookmark your top workouts!"
+                : "You haven't shared any stories yet. Start your fitness journey today!"
+            }}
           </p>
-          <img src="@/assets/noStoies.svg" alt="" />
+          <img
+            :src="isBookmarkView ? noBookmarks : noStories"
+            alt="No Content"
+          />
         </div>
       </div>
     </div>
@@ -263,6 +276,8 @@ import {
   fetchUserStories,
   fetchUserBookmarks, // Import the function to fetch bookmarks
 } from "@/services/apiService";
+import noBookmarks from "~/assets/noBookmark.svg";
+import noStories from "~/assets/noStoies.svg";
 
 const toasts = ref([]);
 const showToast = (message, type = "success") => {
@@ -374,17 +389,20 @@ const closeModal = () => {
 const updateProfile = async () => {
   const userId = user.id;
   const token = authStore.token;
+  console.log("token", token);
   const config = useRuntimeConfig();
   const apiBaseUrl = config.public.apiBaseUrl;
 
   try {
     let avatarPath = user.avatar; // Default ke avatar yang ada
 
+    avatarPath = extractRelativePath(avatarPath, apiBaseUrl);
+
     // Upload gambar jika ada file baru
     if (fileToUpload.value) {
       const response = await profilePicture(fileToUpload.value, token);
       // Ambil hanya path relatif dari response
-      avatarPath = response.data.data.url; // Ini seharusnya sudah berupa path relatif seperti '/storage/avatar/filename.jpg'
+      avatarPath = response.data.data.url;
     }
 
     const response = await axios.put(
@@ -417,6 +435,7 @@ const updateProfile = async () => {
     }
 
     console.log("Profile updated successfully:", response.data);
+    window.location.reload();
   } catch (error) {
     console.error(
       "Error updating profile:",
@@ -424,6 +443,13 @@ const updateProfile = async () => {
     );
     throw error;
   }
+};
+
+const extractRelativePath = (fullUrl, baseUrl) => {
+  if (!fullUrl || !fullUrl.startsWith(baseUrl)) {
+    return fullUrl; // Return as-is jika tidak cocok dengan baseUrl
+  }
+  return fullUrl.replace(baseUrl, ""); // Hapus baseUrl untuk mendapatkan path relatif
 };
 
 const handlePasswordUpdate = async () => {
@@ -557,22 +583,20 @@ const loadStories = async (page) => {
       userId,
       authStore.token,
       apiBaseUrl,
-      page // Pass the specified page
+      page
     );
 
-    // Log the response to check if new stories are returned
     console.log("Fetched Stories Response:", storiesResponse);
 
-    // Check if there are stories returned
     if (
       storiesResponse?.data?.stories &&
       storiesResponse.data.stories.length > 0
     ) {
-      stories.value = storiesResponse.data.stories; // Update stories with new data
-      totalPages.value = storiesResponse.data.pagination.last_page; // Update total pages based on API response
-      currentPage.value = storiesResponse.data.pagination.current_page; // Update current page based on API response
+      stories.value = storiesResponse.data.stories;
+      totalPages.value = storiesResponse.data.pagination.last_page;
+      currentPage.value = storiesResponse.data.pagination.current_page;
     } else {
-      hasMoreStories.value = false; // No more stories to load
+      hasMoreStories.value = false;
     }
   } catch (error) {
     console.error(
@@ -595,17 +619,19 @@ const loadBookmarks = async () => {
 
     if (response && response.data && Array.isArray(response.data.stories)) {
       bookmarks.value = response.data.stories;
-      isBookmarkView.value = true; // Set view ke bookmarks
+      isBookmarkView.value = true;
+      totalPages.value = response.data.pagination.last_page;
+      currentPage.value = response.data.pagination.current_page;
     } else {
       console.error("No bookmarks found in response.");
-      bookmarks.value = []; // Set empty array if no bookmarks
+      bookmarks.value = [];
     }
   } catch (error) {
     console.error(
       "Error loading bookmarks:",
       error?.response?.data || error.message
     );
-    bookmarks.value = []; // Set empty array on error
+    bookmarks.value = [];
   }
 };
 

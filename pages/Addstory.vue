@@ -8,7 +8,9 @@
       </nuxt-link>
 
       <div class="container-header">
-        <h1 class="text-header">Write Story</h1>
+        <h1 class="text-header">
+          {{ isEditMode ? "Edit Story" : "Write Story" }}
+        </h1>
       </div>
     </div>
     <div class="mt-4 container-left container-feild">

@@ -342,10 +342,10 @@ export default {
     onMounted(async () => {
       try {
         const token = authStore.token;
-        if (!token) {
-          console.error("No token found. Please log in again.");
-          return;
-        }
+        // if (!token) {
+        //   console.error("No token found. Please log in again.");
+        //   return;
+        // }
 
         // Ambil query parameter
         const categoryId = route.query.categoryId;

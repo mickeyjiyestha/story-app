@@ -76,12 +76,7 @@
           :key="index"
           class="first-card"
         >
-          <Card
-            :story="story"
-            :imageSrc="story.image"
-            :profilePic="story.profilePic"
-            :link="`/story/${story.id}`"
-          ></Card>
+          <Card :story="story"></Card>
         </div>
       </div>
     </div>
@@ -127,12 +122,7 @@
           :key="index"
           class="first-card"
         >
-          <Card
-            :story="story"
-            :imageSrc="story.image"
-            :profilePic="story.profilePic"
-            :link="`/story/${story.id}`"
-          ></Card>
+          <Card :story="story"></Card>
         </div>
       </div>
     </div>
@@ -230,7 +220,6 @@ const router = useRouter();
 const authStore = useAuthStore();
 const isAuthenticated = computed(() => authStore.isAuthenticated);
 const user = authStore.user;
-console.log("User:", user);
 
 const showLoginModal = ref(false);
 
@@ -350,7 +339,7 @@ if (isAuthenticated.value) {
 
 <style scoped>
 .first-card {
-  margin-left: 90px;
+  margin-left: 50px;
 }
 
 .container-category {
@@ -414,7 +403,7 @@ if (isAuthenticated.value) {
   margin-right: 10px;
   overflow-x: auto;
   overflow-y: hidden;
-  padding: 0 35px;
+
   margin-bottom: 10px;
   scrollbar-width: none;
   margin-right: 100px;
@@ -424,7 +413,6 @@ if (isAuthenticated.value) {
   border: none;
   width: 300px;
   margin: 0;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .card-container::-webkit-scrollbar {
@@ -633,8 +621,13 @@ if (isAuthenticated.value) {
     padding: 20px;
   }
 
+  .footer-content p {
+    font-size: 160px;
+  }
+
   .copyright {
-    margin: 0 0 15px 0;
+    margin-left: 160px;
+    font-size: 20px;
   }
 
   .social-icon {

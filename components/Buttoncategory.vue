@@ -1,20 +1,21 @@
 <template>
-  <button class="btn">{{ label }}</button>
+  <button class="btn" :style="{ backgroundColor: backgroundColor }">
+    {{ label }}
+  </button>
 </template>
 
 <style scoped>
 .btn {
-  background-color: #f0f5ed;
   color: #466543;
   border: none;
   padding: 40px 40px; /* Ubah padding untuk memperluas jarak */
   text-align: center;
   text-decoration: none;
   display: inline-block;
-  font-size: 16px;
+  font-size: 30px;
   margin: 4px 2px;
   cursor: pointer;
-  font-size: 30px;
+  transition: background-color 0.3s ease; /* Efek transisi halus */
 }
 </style>
 
@@ -28,7 +29,7 @@ defineProps({
   },
   backgroundColor: {
     type: String,
-    default: "#f0f5ed", // Nilai default warna latar belakang
+    default: "#f0f5ed", // Warna abu-abu sebagai default
   },
 });
 </script>

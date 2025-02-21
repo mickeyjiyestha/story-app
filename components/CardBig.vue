@@ -34,9 +34,6 @@
         <div class="d-flex align-items-center ml-auto">
           <p class="mb-0 p-date">{{ formatDate(story.created_at) }}</p>
         </div>
-        <div class="category">
-          <p class="mb-0">{{ story.category?.name || "Uncategorized" }}</p>
-        </div>
       </div>
     </div>
   </div>
